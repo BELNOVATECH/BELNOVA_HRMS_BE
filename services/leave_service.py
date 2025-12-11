@@ -1,40 +1,53 @@
-from models.leaves import ApplyLeaveRequest, ApplyLeaveResponse
+# services/leave_service.py
+from sqlalchemy.orm import Session
+from models.leave_model import LeaveRequest
+from schemas.leave_schema import ApplyLeaveRequest
+from fastapi import HTTPException
+from datetime import datetime
 
-leave_list = []
-leave_id_tracker = {}
 
-def apply_leave(payload: ApplyLeaveRequest):
-    if payload.emp_id not in leave_id_tracker:
-        leave_id_tracker[payload.emp_id] = 1
+def apply_leave(payload: ApplyLeaveRequest, db: Session):
 
-    leave_id = leave_id_tracker[payload.emp_id]
+    new_leave = LeaveRequest(
+        emp_id=payload.emp_id,
+        leavetype_id=payload.leavetype_id,
+        start_date=payload.start_date,
+        end_date=payload.end_date,
+        total_days=payload.total_days,
+        reason=payload.reason,
+        from_date_session=payload.from_date_session,
+        to_date_session=payload.to_date_session,
+        mobile=payload.mobile,
+        upload_file=payload.upload_file,
 
-    new_leave = {
-        "leave_id": leave_id,
-        "emp_id": payload.emp_id,
-        "from_date": payload.from_date,
-        "to_date": payload.to_date,
-        "no_of_days": payload.no_of_days,
-        "session_start": payload.session_start,
-        "session_end": payload.session_end,
-        "type_of_leave": payload.type_of_leave,
-        "reason": payload.reason,
-        "upload_files": payload.upload_files,
-        "leave_status": "Pending",
-        "approved_by": payload.approved_by,
-        "approved_on": payload.approved_on,
-    }
+        # ✔ Auto-default to pending = 1
+        approval_status_id=1,
 
-    leave_list.append(new_leave)
-    leave_id_tracker[payload.emp_id] += 1
+        # ✔ created_by = emp_id
+        created_by=payload.emp_id,
+        created_date=datetime.utcnow(),
 
-    return ApplyLeaveResponse(
-        leave_id=new_leave["leave_id"],
-        leave_status=new_leave["leave_status"],
-        approved_by=new_leave["approved_by"],
-        approved_on=new_leave["approved_on"]
+        # ✔ safe fallback if frontend sends None
+        reporting_manager_id=payload.reporting_manager_id or 1  
     )
 
+    db.add(new_leave)
+    db.commit()
+    db.refresh(new_leave)
 
-def leave_history(emp_id: int):
-    return [leave for leave in leave_list if leave["emp_id"] == emp_id]
+    return new_leave
+
+
+def leave_history(emp_id: int, db: Session):
+
+    leaves = (
+        db.query(LeaveRequest)
+        .filter(LeaveRequest.emp_id == emp_id)
+        .order_by(LeaveRequest.id.desc())
+        .all()
+    )
+
+    if not leaves:
+        raise HTTPException(status_code=404, detail="No leave history found")
+
+    return leaves
