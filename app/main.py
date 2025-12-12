@@ -7,6 +7,8 @@ from route.leave_balance_route import router as balance_router
 from route.candidate_route import router as candidate_router
 from route.employee_route import router as employee_router
 from route.upload_route import router as upload_router
+from route.department_route import router as department_route
+from route.job_route import router as job_route
 
 from core.database import Base, engine
 import models.employee_model
@@ -32,6 +34,8 @@ app.include_router(balance_router)
 app.include_router(candidate_router)
 app.include_router(employee_router)
 app.include_router(upload_router)
+app.include_router(department_route)
+app.include_router(job_route)
 
 
 @app.get("/")
