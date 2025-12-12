@@ -1,8 +1,11 @@
-# schemas/leave_schema.py
 from pydantic import BaseModel
 from datetime import date, datetime
 from typing import Optional
 
+
+# ---------------------------------
+# Apply Leave Request Schema
+# ---------------------------------
 class ApplyLeaveRequest(BaseModel):
     emp_id: int
     leavetype_id: int
@@ -16,8 +19,10 @@ class ApplyLeaveRequest(BaseModel):
     upload_file: Optional[str]
     reporting_manager_id: Optional[int] = None  # optional
 
-    # created_by will be auto-set, not sent by user
 
+# ---------------------------------
+# Apply Leave Response Schema
+# ---------------------------------
 class ApplyLeaveResponse(BaseModel):
     id: int
     approval_status_id: int
@@ -28,6 +33,9 @@ class ApplyLeaveResponse(BaseModel):
         from_attributes = True
 
 
+# ---------------------------------
+# Leave History Response
+# ---------------------------------
 class LeaveHistoryResponse(BaseModel):
     id: int
     leavetype_id: int
@@ -39,3 +47,25 @@ class LeaveHistoryResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# ---------------------------------
+# Monthly Leave Summary Schemas
+# ---------------------------------
+class MonthlyLeaveItem(BaseModel):
+    leave_id: int
+    start_date: date
+    end_date: date
+    total_days: float
+    days_counted_in_month: float
+
+    class Config:
+        from_attributes = True
+
+
+class MonthlyLeaveSummaryResponse(BaseModel):
+    emp_id: int
+    month: int
+    year: int
+    total_leaves: float
+    leaves: list[MonthlyLeaveItem]
