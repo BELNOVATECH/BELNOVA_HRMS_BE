@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
+# Import Routers
 from route.auth_route import router as auth_router
 from route.leave_route import router as leave_router
 from route.leave_balance_route import router as balance_router
@@ -13,24 +15,37 @@ from route.interview_schedule_route import interview_schedule_router
 from route.holiday_route import holiday_router
 from route.attendance_route import attendance_router
 
+# Database setup
 from core.database import Base, engine
 import models.employee_model
 
-
+# ---------------------------------------------------
+# FastAPI App Config
+# ---------------------------------------------------
 app = FastAPI(
     title="HRMS Backend API",
     version="1.0"
 )
 
+# ---------------------------------------------------
+# CORS Middleware
+# ---------------------------------------------------
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],        
+    allow_origins=["*"],          
     allow_credentials=True,
-    allow_methods=["*"],        
-    allow_headers=["*"],        
+    allow_methods=["*"],          
+    allow_headers=["*"],          
 )
 
+# ---------------------------------------------------
+# Serve Uploaded Files (PDF, DOCX, Images, etc.)
+# ---------------------------------------------------
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
+# ---------------------------------------------------
+# API Routes
+# ---------------------------------------------------
 app.include_router(auth_router)
 app.include_router(leave_router)
 app.include_router(balance_router)
@@ -45,6 +60,9 @@ app.include_router(holiday_router, prefix="/holidays", tags=["Holiday Calendar"]
 app.include_router(attendance_router, prefix="/attendance", tags=["Attendance"])
 
 
+# ---------------------------------------------------
+# Root Endpoint
+# ---------------------------------------------------
 @app.get("/")
 def root():
     return {"message": "HRMS Backend Running"}
