@@ -1,11 +1,11 @@
 from pydantic import BaseModel
 from datetime import date, datetime
-from typing import Optional
+from typing import Optional, List
 
 
-# ---------------------------------
-# Apply Leave Request Schema
-# ---------------------------------
+# -------------------------------------------------
+# Apply Leave Request
+# -------------------------------------------------
 class ApplyLeaveRequest(BaseModel):
     emp_id: int
     leavetype_id: int
@@ -17,12 +17,12 @@ class ApplyLeaveRequest(BaseModel):
     to_date_session: Optional[str]
     mobile: Optional[str]
     upload_file: Optional[str]
-    reporting_manager_id: Optional[int] = None  # optional
+    reporting_manager_id: Optional[int] = None
 
 
-# ---------------------------------
-# Apply Leave Response Schema
-# ---------------------------------
+# -------------------------------------------------
+# Apply Leave Response
+# -------------------------------------------------
 class ApplyLeaveResponse(BaseModel):
     id: int
     approval_status_id: int
@@ -33,9 +33,9 @@ class ApplyLeaveResponse(BaseModel):
         from_attributes = True
 
 
-# ---------------------------------
-# Leave History Response
-# ---------------------------------
+# -------------------------------------------------
+# Leave History (includes status name)
+# -------------------------------------------------
 class LeaveHistoryResponse(BaseModel):
     id: int
     leavetype_id: int
@@ -43,15 +43,13 @@ class LeaveHistoryResponse(BaseModel):
     end_date: date
     total_days: float
     approval_status_id: int
+    approval_status: str
     reason: Optional[str]
 
-    class Config:
-        from_attributes = True
 
-
-# ---------------------------------
-# Monthly Leave Summary Schemas
-# ---------------------------------
+# -------------------------------------------------
+# Monthly Summary
+# -------------------------------------------------
 class MonthlyLeaveItem(BaseModel):
     leave_id: int
     start_date: date
@@ -59,13 +57,10 @@ class MonthlyLeaveItem(BaseModel):
     total_days: float
     days_counted_in_month: float
 
-    class Config:
-        from_attributes = True
-
 
 class MonthlyLeaveSummaryResponse(BaseModel):
     emp_id: int
     month: int
     year: int
     total_leaves: float
-    leaves: list[MonthlyLeaveItem]
+    leaves: List[MonthlyLeaveItem]
