@@ -15,6 +15,7 @@ from route.interview_schedule_route import interview_schedule_router
 from route.holiday_route import holiday_router
 from route.attendance_route import attendance_router
 
+
 # Database setup
 from core.database import Base, engine
 import models.employee_model
