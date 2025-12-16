@@ -1,8 +1,34 @@
 from pydantic import BaseModel
-from datetime import date, datetime, timedelta
 from typing import Optional
+from datetime import date, datetime, timedelta
+
+# =====================================
+# REQUEST SCHEMA (LOGIN)
+# =====================================
+class AttendanceLoginRequest(BaseModel):
+    emp_id: int
+    working_status_id: int = 1
+    remarks: Optional[str] = None
 
 
+# =====================================
+# RESPONSE SCHEMA (LOGIN / LOGOUT)
+# =====================================
+class AttendanceResponse(BaseModel):
+    id: int
+    emp_id: int
+    date: date
+    login_time: Optional[str]
+    logout_time: Optional[str]
+    working_hours: Optional[str]
+    status: str
+    remarks: Optional[str]
+    is_active: bool
+
+
+# =====================================
+# READ / REPORT SCHEMA
+# =====================================
 class AttendanceRead(BaseModel):
     id: int
     emp_id: int
@@ -17,6 +43,7 @@ class AttendanceRead(BaseModel):
     class Config:
         from_attributes = True
 
+    # -------- SERIALIZERS --------
     @staticmethod
     def serialize_time(value):
         if isinstance(value, datetime):
