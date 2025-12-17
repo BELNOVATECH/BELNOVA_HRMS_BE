@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 from fastapi import HTTPException
 from datetime import datetime, date
 import calendar
@@ -6,27 +7,19 @@ import calendar
 from models.leave_model import LeaveRequest
 from schemas.leave_schema import (
     ApplyLeaveRequest,
-    MonthlyLeaveSummaryResponse,
     MonthlyLeaveItem,
-    LeaveHistoryResponse,
+    MonthlyLeaveSummaryResponse
 )
-
-
-# ---------------------------------------------------
-# STATUS MAPPER
-# ---------------------------------------------------
-def get_status_text(status_id: int):
-    return {
-        1: "Pending",
-        2: "Approved",
-        3: "Rejected"
-    }.get(status_id, "Unknown")
+from services.employee_validator import validate_employee
 
 
 # ---------------------------------------------------
 # 1. APPLY LEAVE
 # ---------------------------------------------------
 def apply_leave(payload: ApplyLeaveRequest, db: Session):
+
+    # validate employee
+    validate_employee(payload.emp_id, db)
 
     new_leave = LeaveRequest(
         emp_id=payload.emp_id,
@@ -42,7 +35,7 @@ def apply_leave(payload: ApplyLeaveRequest, db: Session):
         approval_status_id=1,  # Pending
         created_by=payload.emp_id,
         created_date=datetime.utcnow(),
-        reporting_manager_id=payload.reporting_manager_id or 1
+        reporting_manager_id=payload.reporting_manager_id
     )
 
     db.add(new_leave)
@@ -53,75 +46,55 @@ def apply_leave(payload: ApplyLeaveRequest, db: Session):
 
 
 # ---------------------------------------------------
-# 2. LEAVE HISTORY WITH STATUS NAME
+# 2. LEAVE HISTORY (DB FUNCTION)
 # ---------------------------------------------------
-def leave_history(emp_id: int, db: Session):
-    leaves = (
-        db.query(LeaveRequest)
-        .filter(LeaveRequest.emp_id == emp_id)
-        .order_by(LeaveRequest.id.desc())
-        .all()
-    )
+def leave_history(emp_id: int, limit: int, offset: int, db: Session):
 
-    if not leaves:
-        raise HTTPException(status_code=404, detail="No leave history found")
+    validate_employee(emp_id, db)
 
-    result = []
-    for leave in leaves:
-        result.append({
-            "id": leave.id,
-            "leavetype_id": leave.leavetype_id,
-            "start_date": leave.start_date,
-            "end_date": leave.end_date,
-            "total_days": leave.total_days,
-            "approval_status_id": leave.approval_status_id,
-            "approval_status": get_status_text(leave.approval_status_id),
-            "reason": leave.reason,
-        })
-
-    return result
-
-
-# ---------------------------------------------------
-# 3. FILTER LEAVES BY STATUS (Pending / Approved / Rejected)
-# ---------------------------------------------------
-def filter_leaves_by_status(emp_id: int, status: str, db: Session):
-
-    status_map = {"pending": 1, "approved": 2, "rejected": 3}
-
-    status_id = status_map.get(status.lower())
-    if not status_id:
-        raise HTTPException(400, "Invalid status. Use pending, approved, rejected")
-
-    leaves = (
-        db.query(LeaveRequest)
-        .filter(
-            LeaveRequest.emp_id == emp_id,
-            LeaveRequest.approval_status_id == status_id
+    if limit <= 0 or offset < 0:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid pagination values"
         )
-        .all()
-    )
 
-    result = []
-    for leave in leaves:
-        result.append({
-            "id": leave.id,
-            "leavetype_id": leave.leavetype_id,
-            "start_date": leave.start_date,
-            "end_date": leave.end_date,
-            "total_days": leave.total_days,
-            "approval_status_id": leave.approval_status_id,
-            "approval_status": get_status_text(leave.approval_status_id),
-            "reason": leave.reason,
-        })
+    try:
+        result = db.execute(
+            text("""
+                SELECT *
+                FROM fn_leave_request_get_list(
+                    :emp_id, :limit, :offset
+                )
+            """),
+            {
+                "emp_id": emp_id,
+                "limit": limit,
+                "offset": offset
+            }
+        )
 
-    return result
+        rows = result.mappings().all()
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Database error: {str(e)}"
+        )
+
+    return rows
 
 
 # ---------------------------------------------------
-# 4. MONTHLY LEAVE SUMMARY
+# 3. MONTHLY LEAVE SUMMARY
 # ---------------------------------------------------
-def monthly_leave_summary_service(emp_id: int, year: int, month: int, db: Session):
+def monthly_leave_summary_service(
+    emp_id: int,
+    year: int,
+    month: int,
+    db: Session
+):
+
+    validate_employee(emp_id, db)
 
     month_start = date(year, month, 1)
     last_day = calendar.monthrange(year, month)[1]
@@ -156,7 +129,7 @@ def monthly_leave_summary_service(emp_id: int, year: int, month: int, db: Sessio
                 start_date=leave.start_date,
                 end_date=leave.end_date,
                 total_days=leave.total_days or 0,
-                days_counted_in_month=days_counted,
+                days_counted_in_month=days_counted
             )
         )
 
