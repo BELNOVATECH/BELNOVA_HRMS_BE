@@ -1,42 +1,52 @@
-# services/employee_service.py
-
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
+from fastapi import HTTPException
+
 from models.employee_model import Employee
 from schemas.employee_schema import EmployeeCreate
-from fastapi import HTTPException
-from sqlalchemy.exc import IntegrityError
 
 
 def create_employee_service(payload: EmployeeCreate, db: Session) -> Employee:
     """
-    Create a new employee and log real PostgreSQL errors if insertion fails.
+    Create a new employee
     """
 
-    # Check duplicate emp_code
+    # 🔁 Check duplicate emp_code (business rule)
     if payload.emp_code:
-        exists = db.query(Employee).filter(Employee.emp_code == payload.emp_code).first()
+        exists = (
+            db.query(Employee)
+            .filter(Employee.emp_code == payload.emp_code)
+            .first()
+        )
         if exists:
             raise HTTPException(
                 status_code=400,
-                detail=f"Employee with emp_code {payload.emp_code} already exists"
+                detail=f"Employee with emp_code '{payload.emp_code}' already exists"
             )
 
     try:
-        new_emp = Employee(**payload.dict(exclude_none=True))
-        db.add(new_emp)
+        new_employee = Employee(
+            **payload.dict(exclude_none=True)
+        )
+
+        db.add(new_employee)
         db.commit()
-        db.refresh(new_emp)
-        return new_emp
+        db.refresh(new_employee)
+
+        return new_employee
 
     except IntegrityError as e:
         db.rollback()
 
-        # 🔥 PRINT REAL DB ERROR
-        print("\n\n🔥 REAL DATABASE ERROR (POSTGRES SAYS):")
+        # 🔥 Log REAL PostgreSQL error (for debugging)
+        print("\n🔥 DATABASE ERROR:")
         print(str(e.orig))
-        print("--------------------------------------------------\n\n")
+        print("--------------------------------\n")
 
-        raise HTTPException(status_code=400, detail="Database integrity error")
+        raise HTTPException(
+            status_code=400,
+            detail="Employee creation failed due to database constraint"
+        )
 
 
 def get_employees_service(db: Session):
