@@ -1,42 +1,51 @@
-leave_data = {
-    1: {"emp_name": "Employee 1", "leaves_taken": {"Sick": 2, "Casual": 1, "Paid": 0}},
-    2: {"emp_name": "Employee 2", "leaves_taken": {"Sick": 1, "Casual": 2, "Paid": 3}},
-    3: {"emp_name": "Employee 3", "leaves_taken": {"Sick": 5, "Casual": 2, "Paid": 1}},
-}
+from sqlalchemy.orm import Session
+from sqlalchemy import text
+from fastapi import HTTPException
 
-SICK_TOTAL = 10
-CASUAL_TOTAL = 8
-PAID_TOTAL = 6
+from services.employee_validator import validate_employee
 
 
-def leave_balance_controller(emp_id: int):
-    emp = leave_data.get(emp_id)
+def leave_balance_controller(
+    emp_id: int,
+    year: int,
+    month: int,
+    offset: int,
+    db: Session
+):
+    # ✅ Validate employee
+    validate_employee(emp_id, db)
 
-    if not emp:
-        return {"message": "Employee not found"}
-
-    taken = emp["leaves_taken"]
-
-    return {
-        "emp_name": emp["emp_name"],
-        "leaves": [
+    try:
+        result = db.execute(
+            text("""
+                SELECT *
+                FROM fn_leave_balance(
+                    :emp_id,
+                    :year,
+                    :month,
+                    :offset
+                )
+            """),
             {
-                "type_of_leave": "Sick",
-                "total_leaves": SICK_TOTAL,
-                "leaves_taken": taken.get("Sick", 0),
-                "leaves_remaining": SICK_TOTAL - taken.get("Sick", 0)
-            },
-            {
-                "type_of_leave": "Casual",
-                "total_leaves": CASUAL_TOTAL,
-                "leaves_taken": taken.get("Casual", 0),
-                "leaves_remaining": CASUAL_TOTAL - taken.get("Casual", 0)
-            },
-            {
-                "type_of_leave": "Paid",
-                "total_leaves": PAID_TOTAL,
-                "leaves_taken": taken.get("Paid", 0),
-                "leaves_remaining": PAID_TOTAL - taken.get("Paid", 0)
+                "emp_id": emp_id,
+                "year": year,
+                "month": month,
+                "offset": offset
             }
-        ]
+        )
+
+        rows = result.mappings().all()
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Database error: {str(e)}"
+        )
+
+    # ✅ Always return same structure
+    return {
+        "emp_id": emp_id,
+        "year": year,
+        "month": month,
+        "leaves": rows
     }
