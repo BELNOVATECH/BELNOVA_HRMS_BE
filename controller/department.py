@@ -5,6 +5,7 @@ from services.dept import (
     get_all_departments
 )
 from models.department import DepartmentCreateRequest, DepartmentResponse
+from services.dept import update_department_is_active
 
 
 def create_department_controller(request: DepartmentCreateRequest):
@@ -40,3 +41,6 @@ def get_all_departments_controller():
         )
         for row in rows
     ]
+    
+def update_department_is_active_controller(dept_id: int, request):
+    return update_department_is_active(dept_id, request.is_active)

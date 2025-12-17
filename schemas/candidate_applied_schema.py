@@ -1,6 +1,7 @@
 from pydantic import BaseModel, EmailStr, field_validator
 from datetime import date
 from utils.date_utils import convert_date
+from typing import Optional
 
 import re
 
@@ -39,5 +40,14 @@ class CandidateAppliedRead(BaseModel):
     address: str
     application_status_id: int
     upload_resume: str | None
-
+    
+class CandidateAppliedUpdate(BaseModel):
+    candidate_name: Optional[str] = None
+    position_id: Optional[int] = None
+    dob: Optional[date] = None
+    email: Optional[EmailStr] = None
+    mobile: Optional[str] = None
+    address: Optional[str] = None
+    application_status_id: Optional[int] = None
+    upload_resume: Optional[str] = None
     model_config = {"from_attributes": True}
