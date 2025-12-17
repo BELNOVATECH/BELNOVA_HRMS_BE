@@ -7,3 +7,7 @@ class JobTitleResponse(BaseModel):
     id: int
     position: str
     is_active: bool
+    
+
+class IsActiveUpdate(BaseModel):
+    is_active: bool

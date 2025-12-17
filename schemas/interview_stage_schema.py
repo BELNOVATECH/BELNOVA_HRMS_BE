@@ -19,6 +19,10 @@ class InterviewStageUpdate(BaseModel):
     is_active: Optional[bool] = None
 
 
+# UPDATE (ONLY is_active)
+class InterviewStageIsActiveUpdate(BaseModel):
+    is_active: bool
+
 # -------------------------
 # RESPONSE SCHEMA
 # -------------------------

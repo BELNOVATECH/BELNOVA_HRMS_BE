@@ -5,6 +5,7 @@ from core.database import get_db
 from schemas.interview_stage_schema import (
     InterviewStageCreate,
     InterviewStageUpdate,
+    InterviewStageIsActiveUpdate,
     InterviewStageResponse
 )
 from controller.interview_stage_controller import (
@@ -12,6 +13,7 @@ from controller.interview_stage_controller import (
     get_all_interview_stages,
     get_interview_stage_by_id,
     update_interview_stage,
+    update_interview_stage_is_active,
     delete_interview_stage
 )
 
@@ -40,9 +42,13 @@ def get_stage(stage_id: int, db: Session = Depends(get_db)):
 def update_stage(stage_id: int, req: InterviewStageUpdate, db: Session = Depends(get_db)):
     return update_interview_stage(stage_id, req, db)
 
-
-
-
+@router.put("/{stage_id}/status", response_model=InterviewStageResponse)
+def update_stage_status(
+    stage_id: int,
+    req: InterviewStageIsActiveUpdate,
+    db: Session = Depends(get_db)
+):
+    return update_interview_stage_is_active(stage_id, req, db)
 
 @router.delete("/{stage_id}")
 def delete_stage(stage_id: int, db: Session = Depends(get_db)):

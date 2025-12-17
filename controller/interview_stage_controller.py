@@ -4,7 +4,8 @@ from fastapi import HTTPException
 from models.interview_stage import InterviewStage
 from schemas.interview_stage_schema import (
     InterviewStageCreate,
-    InterviewStageUpdate
+    InterviewStageUpdate,
+    InterviewStageIsActiveUpdate
 )
 
 
@@ -39,6 +40,17 @@ def update_interview_stage(stage_id: int, req: InterviewStageUpdate, db: Session
     if req.is_active is not None:
         stage.is_active = req.is_active
 
+    db.commit()
+    db.refresh(stage)
+    return stage
+
+def update_interview_stage_is_active(
+    stage_id: int,
+    req: InterviewStageIsActiveUpdate,
+    db: Session
+):
+    stage = get_interview_stage_by_id(stage_id, db)
+    stage.is_active = req.is_active
     db.commit()
     db.refresh(stage)
     return stage

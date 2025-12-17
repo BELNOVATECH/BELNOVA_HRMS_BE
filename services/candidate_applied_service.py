@@ -45,6 +45,21 @@ def create_candidate_applied_service(data: CandidateAppliedCreate, db):
     return candidate
 
 
+def update_candidate_applied_service(id: int, data, db):
+    candidate = db.execute(
+        select(CandidateApplied).where(CandidateApplied.id == id)
+    ).scalar_one_or_none()
+
+    if not candidate:
+        raise HTTPException(status_code=404, detail="Candidate not found")
+
+    for field, value in data.model_dump(exclude_unset=True).items():
+        setattr(candidate, field, value)
+
+    db.commit()
+    db.refresh(candidate)
+    return candidate
+
 def get_candidate_applied_service(db):
     result = db.execute(select(CandidateApplied))
     return result.scalars().all()

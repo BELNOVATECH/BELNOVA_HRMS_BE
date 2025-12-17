@@ -56,3 +56,23 @@ def get_all_jobs():
     conn.close()
 
     return jobs
+def update_job_is_active(job_id: int, is_active: bool):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        UPDATE master_position
+        SET is_active = %s
+        WHERE id = %s
+        RETURNING id, position, is_active
+        """,
+        (is_active, job_id)
+    )
+
+    job = cur.fetchone()
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    return job

@@ -1,6 +1,8 @@
 from fastapi import HTTPException
 from services.job_service import create_job, get_job, get_all_jobs
 from models.job_title import JobTitleCreateRequest, JobTitleResponse
+from services.job_service import update_job_is_active
+from models.job_title import IsActiveUpdate
 
 
 def create_job_controller(request: JobTitleCreateRequest):
@@ -37,3 +39,14 @@ def get_all_jobs_controller():
         )
         for job in jobs
     ]
+def update_job_is_active_controller(job_id: int, request: IsActiveUpdate):
+    job = update_job_is_active(job_id, request.is_active)
+
+    if not job:
+        raise HTTPException(status_code=404, detail="Job title not found")
+
+    return JobTitleResponse(
+        id=job["id"],
+        position=job["position"],
+        is_active=job["is_active"]
+    )
