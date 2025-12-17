@@ -11,7 +11,6 @@ from schemas.interview_stage_schema import (
 def create_interview_stage(req: InterviewStageCreate, db: Session):
     stage = InterviewStage(
         stage_name=req.stage_name,
-        description=req.description,
         is_active=req.is_active
     )
     db.add(stage)
@@ -36,8 +35,7 @@ def update_interview_stage(stage_id: int, req: InterviewStageUpdate, db: Session
 
     if req.stage_name is not None:
         stage.stage_name = req.stage_name
-    if req.description is not None:
-        stage.description = req.description
+   
     if req.is_active is not None:
         stage.is_active = req.is_active
 
