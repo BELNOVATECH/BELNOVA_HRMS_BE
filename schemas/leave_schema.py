@@ -30,7 +30,26 @@ class ApplyLeaveResponse(BaseModel):
 
 
 # =================================================
-# LEAVE HISTORY (DB FUNCTION RESPONSE)
+# APPROVE / REJECT
+# =================================================
+class LeaveApprovalRequest(BaseModel):
+    leave_id: int
+    action: str              # approve | reject
+    approver_id: int
+    remarks: Optional[str] = None
+
+
+class LeaveApprovalResponse(BaseModel):
+    leave_id: int
+    approval_status_id: int
+    approval_status: str
+    approver_id: int
+    remarks: Optional[str]
+    modified_date: datetime
+
+
+# =================================================
+# LEAVE HISTORY (DB FUNCTION)
 # =================================================
 class LeaveHistoryResponse(BaseModel):
     leave_request_id: int
@@ -47,7 +66,7 @@ class LeaveHistoryResponse(BaseModel):
 
 
 # =================================================
-# MONTHLY LEAVE SUMMARY
+# MONTHLY SUMMARY
 # =================================================
 class MonthlyLeaveItem(BaseModel):
     leave_id: int

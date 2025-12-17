@@ -18,7 +18,6 @@ class LeaveRequest(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
-    # 🔗 FK → employee_registration.id
     emp_id = Column(
         Integer,
         ForeignKey("employee_registration.id", ondelete="CASCADE"),
@@ -26,7 +25,6 @@ class LeaveRequest(Base):
         index=True
     )
 
-    # 🔗 FK → leave_type.id (joined in DB function)
     leavetype_id = Column(Integer, nullable=False)
 
     start_date = Column(Date, nullable=False)
@@ -35,8 +33,8 @@ class LeaveRequest(Base):
 
     reason = Column(String(255), nullable=True)
 
-    # 1 = Pending, 2 = Approved, 3 = Rejected
-    approval_status_id = Column(Integer, default=1, nullable=False)
+    # 1 = Approved | 2 = Pending | 3 = Rejected
+    approval_status_id = Column(Integer, default=2, nullable=False)
     approver_id = Column(Integer, nullable=True)
 
     created_by = Column(Integer, nullable=True)
@@ -57,5 +55,4 @@ class LeaveRequest(Base):
 
     is_active = Column(Boolean, default=True)
 
-    # ORM relationship
     employee = relationship("Employee", backref="leaves")
