@@ -29,7 +29,7 @@ def create_candidate_applied_service(data: CandidateAppliedCreate, db):
 
     candidate = CandidateApplied(
         candidate_name=data.candidate_name,
-        position_id=data.position_id,
+        designation_id=data.designation_id,
         dob=dob,
         email=data.email,
         mobile=data.mobile,
