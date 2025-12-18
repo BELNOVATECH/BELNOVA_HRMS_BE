@@ -83,6 +83,11 @@ app.include_router(
     tags=["Attendance"]
 )
 
+app.include_router(
+    job_route,
+    prefix="/job-openings",
+    tags=["Job Openings"]
+)
 # -----------------------------
 # Root Endpoint
 # -----------------------------
