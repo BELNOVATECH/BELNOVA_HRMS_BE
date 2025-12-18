@@ -7,7 +7,7 @@ import re
 
 class CandidateAppliedCreate(BaseModel):
     candidate_name: str
-    position_id: int
+    designation_id: int
     dob: date
     email: EmailStr
     mobile: str
@@ -33,7 +33,7 @@ class CandidateAppliedCreate(BaseModel):
 class CandidateAppliedRead(BaseModel):
     id: int
     candidate_name: str
-    position_id: int
+    designation_id: int
     dob: date
     email: EmailStr
     mobile: str
@@ -43,7 +43,7 @@ class CandidateAppliedRead(BaseModel):
     
 class CandidateAppliedUpdate(BaseModel):
     candidate_name: Optional[str] = None
-    position_id: Optional[int] = None
+    designation_id: Optional[int] = None
     dob: Optional[date] = None
     email: Optional[EmailStr] = None
     mobile: Optional[str] = None
