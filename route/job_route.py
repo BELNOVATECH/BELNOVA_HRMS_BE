@@ -7,7 +7,7 @@ from schemas.job_title_schema import (
     JobTitleCreate,
     JobOpeningIsActiveUpdate
 )
-from controller.job_title_controller import (
+from controller.job_title import (
     get_all_job_openings_controller,
     create_job_title_controller,
     update_job_opening_is_active_controller

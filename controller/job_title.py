@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from services.job_title_service import (
+from services.job_service import (
     get_all_job_openings_service,
     create_job_title_service,
     update_job_opening_is_active_service
