@@ -1,11 +1,8 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from core.database import get_db
 
-from schemas.leave_balance_schema import (
-    LeaveBalanceRequest,
-    LeaveBalanceResponse
-)
+from schemas.leave_balance_schema import LeaveBalanceResponse
 from services.leave_balance_service import leave_balance_controller
 
 router = APIRouter(
@@ -14,18 +11,21 @@ router = APIRouter(
 )
 
 
-@router.post(
+@router.get(
     "/balance",
     response_model=LeaveBalanceResponse
 )
 def get_leave_balance(
-    payload: LeaveBalanceRequest,
+    emp_id: int = Query(..., description="Employee ID"),
+    year: int = Query(..., description="Year (e.g. 2025)"),
+    month: int = Query(..., description="Month (1-12)"),
+    offset: int = Query(0, description="Pagination offset"),
     db: Session = Depends(get_db)
 ):
     return leave_balance_controller(
-        emp_id=payload.emp_id,
-        year=payload.year,
-        month=payload.month,
-        offset=payload.offset,
+        emp_id=emp_id,
+        year=year,
+        month=month,
+        offset=offset,
         db=db
     )

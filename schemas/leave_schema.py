@@ -3,40 +3,37 @@ from datetime import date, datetime
 from typing import Optional, List
 
 
-# =================================================
-# APPLY LEAVE
-# =================================================
+# ================= APPLY LEAVE =================
 class ApplyLeaveRequest(BaseModel):
     emp_id: int
     leavetype_id: int
     start_date: date
     end_date: date
-    total_days: Optional[float] = None
-    reason: Optional[str] = None
-    from_date_session: Optional[str] = None
-    to_date_session: Optional[str] = None
-    mobile: Optional[str] = None
-    upload_file: Optional[str] = None
-    reporting_manager_id: Optional[int] = None
+    total_days: float
+    reason: Optional[str]
+    from_date_session: Optional[str]
+    to_date_session: Optional[str]
+    mobile: Optional[str]
+    upload_file: Optional[str]
+    reporting_manager_id: Optional[int]
 
 
 class ApplyLeaveResponse(BaseModel):
     id: int
+    leavetype_id: int
+    leavetype_name: str
     approval_status_id: int
     created_date: datetime
 
-    class Config:
-        from_attributes = True
 
 
-# =================================================
-# APPROVE / REJECT
-# =================================================
+
+# ================= APPROVE / REJECT =================
 class LeaveApprovalRequest(BaseModel):
     leave_id: int
-    action: str              # approve | reject
+    action: str       # approve | reject
     approver_id: int
-    remarks: Optional[str] = None
+    remarks: Optional[str]
 
 
 class LeaveApprovalResponse(BaseModel):
@@ -48,9 +45,7 @@ class LeaveApprovalResponse(BaseModel):
     modified_date: datetime
 
 
-# =================================================
-# LEAVE HISTORY (DB FUNCTION)
-# =================================================
+# ================= HISTORY =================
 class LeaveHistoryResponse(BaseModel):
     leave_request_id: int
     emp_id: int
@@ -62,12 +57,9 @@ class LeaveHistoryResponse(BaseModel):
     approval_status_id: int
     approval_status: str
     reason: Optional[str]
-    # created_date: datetime
 
 
-# =================================================
-# MONTHLY SUMMARY
-# =================================================
+# ================= MONTHLY SUMMARY =================
 class MonthlyLeaveItem(BaseModel):
     leave_id: int
     start_date: date
