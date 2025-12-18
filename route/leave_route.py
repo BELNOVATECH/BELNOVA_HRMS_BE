@@ -18,30 +18,15 @@ from services.leave_service import (
     monthly_leave_summary_service
 )
 
-router = APIRouter(
-    prefix="/leave",
-    tags=["Leave Management"]
-)
+router = APIRouter(prefix="/leave", tags=["Leave Management"])
 
 
-# =================================================
-# APPLY LEAVE
-# =================================================
 @router.post("/apply", response_model=ApplyLeaveResponse)
-def apply_leave_api(
-    payload: ApplyLeaveRequest,
-    db: Session = Depends(get_db)
-):
+def apply_leave_api(payload: ApplyLeaveRequest, db: Session = Depends(get_db)):
     return apply_leave(payload, db)
 
 
-# =================================================
-# APPROVE / REJECT
-# =================================================
-@router.post(
-    "/approve-reject",
-    response_model=LeaveApprovalResponse
-)
+@router.post("/approve-reject", response_model=LeaveApprovalResponse)
 def approve_reject_leave_api(
     payload: LeaveApprovalRequest,
     db: Session = Depends(get_db)
@@ -49,13 +34,7 @@ def approve_reject_leave_api(
     return approve_or_reject_leave(payload, db)
 
 
-# =================================================
-# LEAVE HISTORY
-# =================================================
-@router.get(
-    "/history/{emp_id}",
-    response_model=list[LeaveHistoryResponse]
-)
+@router.get("/history/{emp_id}", response_model=list[LeaveHistoryResponse])
 def get_leave_history(
     emp_id: int,
     limit: int = 10,
@@ -65,13 +44,7 @@ def get_leave_history(
     return leave_history(emp_id, limit, offset, db)
 
 
-# =================================================
-# MONTHLY SUMMARY
-# =================================================
-@router.get(
-    "/monthly-summary",
-    response_model=MonthlyLeaveSummaryResponse
-)
+@router.get("/monthly-summary", response_model=MonthlyLeaveSummaryResponse)
 def get_monthly_leave_summary(
     emp_id: int,
     year: int,

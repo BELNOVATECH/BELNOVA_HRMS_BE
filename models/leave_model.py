@@ -35,6 +35,7 @@ class LeaveRequest(Base):
 
     # 1 = Approved | 2 = Pending | 3 = Rejected
     approval_status_id = Column(Integer, default=2, nullable=False)
+
     approver_id = Column(Integer, nullable=True)
 
     created_by = Column(Integer, nullable=True)
@@ -43,7 +44,11 @@ class LeaveRequest(Base):
     modified_by = Column(Integer, nullable=True)
     modified_date = Column(DateTime, nullable=True)
 
+    approved_on = Column(DateTime, nullable=True)
+
     remarks = Column(String(255), nullable=True)
+
+    is_active = Column(Boolean, default=True)
 
     reporting_manager_id = Column(Integer, nullable=True)
 
@@ -52,7 +57,5 @@ class LeaveRequest(Base):
 
     mobile = Column(String(20), nullable=True)
     upload_file = Column(String(255), nullable=True)
-
-    is_active = Column(Boolean, default=True)
 
     employee = relationship("Employee", backref="leaves")
