@@ -1,78 +1,34 @@
-from utils.db import get_connection
-from utils.activate_checker import is_active_name
+from sqlalchemy.orm import Session
+from fastapi import HTTPException
+from models.job_title import JobOpening
+from models.job_title import JobOpening
 
 
-def create_job(position: str):
-    is_active = is_active_name(position)
-
-    conn = get_connection()
-    cur = conn.cursor()
-
-    cur.execute(
-        """INSERT INTO master_position (position, is_active)
-           VALUES (%s, %s)
-           RETURNING id, position, is_active""",
-        (position, is_active)
+def get_all_job_openings_service(db: Session):
+    return db.query(JobOpening).all()
+def create_job_title_service(data, db: Session):
+    job = JobOpening(
+        designation_id=data.designation_id,
+        department_id=data.department_id,
+        status_id=data.status_id
     )
-
-    job = cur.fetchone()
-    conn.commit()
-    cur.close()
-    conn.close()
-
+    db.add(job)
+    db.commit()
+    db.refresh(job)
     return job
 
+def update_job_opening_is_active_service(
+    job_id: int,
+    is_active: bool,
+    db: Session
+):
+    job = db.query(JobOpening).filter(JobOpening.id == job_id).first()
 
-def get_job(job_id: int):
-    conn = get_connection()
-    cur = conn.cursor()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job opening not found")
 
-    cur.execute("SELECT * FROM master_position WHERE id = %s", (job_id,))
-    job = cur.fetchone()
-
-    cur.close()
-    conn.close()
-    return job
-
-
-def get_all_jobs():
-    conn = get_connection()
-    cur = conn.cursor()
-
-    cur.execute("SELECT * FROM master_position ORDER BY id")
-    jobs = cur.fetchall()
-
-    # auto-update invalid values
-    for job in jobs:
-        expected = is_active_name(job["position"])
-        if job["is_active"] != expected:
-            cur.execute(
-                "UPDATE master_position SET is_active = %s WHERE id = %s",
-                (expected, job["id"])
-            )
-
-    conn.commit()
-    cur.close()
-    conn.close()
-
-    return jobs
-def update_job_is_active(job_id: int, is_active: bool):
-    conn = get_connection()
-    cur = conn.cursor()
-
-    cur.execute(
-        """
-        UPDATE master_position
-        SET is_active = %s
-        WHERE id = %s
-        RETURNING id, position, is_active
-        """,
-        (is_active, job_id)
-    )
-
-    job = cur.fetchone()
-    conn.commit()
-    cur.close()
-    conn.close()
+    job.is_active = is_active
+    db.commit()
+    db.refresh(job)
 
     return job
