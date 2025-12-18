@@ -6,46 +6,31 @@ from models.employee_model import Employee
 from schemas.employee_schema import EmployeeCreate
 
 
-def create_employee_service(payload: EmployeeCreate, db: Session) -> Employee:
-    """
-    Create a new employee
-    """
-
-    # 🔁 Check duplicate emp_code (business rule)
+def create_employee_service(payload: EmployeeCreate, db: Session):
+    # Check duplicate emp_code
     if payload.emp_code:
-        exists = (
-            db.query(Employee)
-            .filter(Employee.emp_code == payload.emp_code)
-            .first()
-        )
+        exists = db.query(Employee).filter(
+            Employee.emp_code == payload.emp_code
+        ).first()
         if exists:
             raise HTTPException(
                 status_code=400,
-                detail=f"Employee with emp_code '{payload.emp_code}' already exists"
+                detail="Employee with this emp_code already exists"
             )
 
     try:
-        new_employee = Employee(
-            **payload.dict(exclude_none=True)
-        )
-
-        db.add(new_employee)
+        employee = Employee(**payload.dict(exclude_none=True))
+        db.add(employee)
         db.commit()
-        db.refresh(new_employee)
-
-        return new_employee
+        db.refresh(employee)
+        return employee
 
     except IntegrityError as e:
         db.rollback()
-
-        # 🔥 Log REAL PostgreSQL error (for debugging)
-        print("\n🔥 DATABASE ERROR:")
-        print(str(e.orig))
-        print("--------------------------------\n")
-
+        print("🔥 DB ERROR:", e.orig)
         raise HTTPException(
             status_code=400,
-            detail="Employee creation failed due to database constraint"
+            detail="Employee creation failed"
         )
 
 
@@ -53,4 +38,4 @@ def get_employees_service(db: Session):
     """
     Fetch all employees
     """
-    return db.query(Employee).all()
+    return db.query(Employee).order_by(Employee.id.desc()).all()
