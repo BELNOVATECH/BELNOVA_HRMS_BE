@@ -1,12 +1,7 @@
+# models/employee_model.py
 from sqlalchemy import (
-    Column,
-    Integer,
-    String,
-    Date,
-    DateTime,
-    Boolean,
-    Float,
-    Text
+    Column, Integer, String, Date, DateTime,
+    Boolean, Float, Text
 )
 from core.database import Base
 from datetime import datetime
@@ -15,52 +10,56 @@ from datetime import datetime
 class Employee(Base):
     __tablename__ = "employee_registration"
 
-    # 🔑 Employee ID
     id = Column(Integer, primary_key=True, index=True)
 
-    # Basic Info
     first_name = Column(String(150), nullable=False)
-    last_name = Column(String(150), nullable=True)
-    email = Column(String(255), nullable=True)
-    mobile = Column(String(20), nullable=True)
+    last_name = Column(String(150))
+    email = Column(String(255))
+    mobile = Column(String(20))
 
-    # Personal Details
-    address = Column(Text, nullable=True)
-    civil_status_id = Column(Integer, nullable=True)
-    gender_id = Column(Integer, nullable=True)
-    date_of_birth = Column(Date, nullable=True)
-    emergency_mobile = Column(String(20), nullable=True)
+    present_address = Column(Text)
+    permanent_address = Column(Text)
 
-    # Job Details
-    emp_code = Column(String(100), unique=True, nullable=True)
-    position_id = Column(Integer, nullable=True)
-    department_id = Column(Integer, nullable=True)
-    work_status_id = Column(Integer, nullable=True)
-    manager_id = Column(Integer, nullable=True)
-    hired_date = Column(Date, nullable=True)
-    join_date = Column(Date, nullable=True)
+    father_name = Column(String(150))
+    blood_group_id = Column(Integer)
+    gender_id = Column(Integer)
+    marital_status_id = Column(Integer)
+    date_of_birth = Column(Date)
+    emergency_mobile = Column(String(20))
+    reference_mobile = Column(String(20))
+    aadhaar = Column(String(20))
 
-    # Salary & Bank
-    salary = Column(Float, nullable=True)
-    pay_method_id = Column(Integer, nullable=True)
-    bank_id = Column(Integer, nullable=True)
-    bank_ac_no = Column(String(100), nullable=True)
-    ifsc_code = Column(String(50), nullable=True)
+    emp_code = Column(String(100), unique=True)
+    designation_id = Column(Integer)
+    department_id = Column(Integer)
+    employee_type_id = Column(Integer)
+    manager_id = Column(Integer)
+    role_id = Column(Integer)
+    work_location_id = Column(Integer)
+    shift_id = Column(Integer)
 
-    # Compliance
-    pan = Column(String(50), nullable=True)
-    uan = Column(String(100), nullable=True)
-    esic = Column(String(100), nullable=True)
+    hired_date = Column(Date)
+    join_date = Column(Date)
+    probation_end_date = Column(Date)
 
-    # Documents
-    upload_doc = Column(String(255), nullable=True)
+    salary = Column(Float)
+    ctc = Column(Float)
+    pay_method_id = Column(Integer)
 
-    # System Fields
-    user_id = Column(Integer, nullable=True)
-    created_by = Column(Integer, nullable=True)
-    modified_by = Column(Integer, nullable=True)
+    bank_id = Column(Integer)
+    bank_ac_no = Column(String(100))
+    ifsc_code = Column(String(50))
 
+    pan = Column(String(50))
+    uan = Column(String(100))
+    esic = Column(String(100))
+
+    upload_doc = Column(String(255))
+
+    user_id = Column(Integer)
+    created_by = Column(Integer)
+    modified_by = Column(Integer)
     is_active = Column(Boolean, default=True)
 
     created_date = Column(DateTime, default=datetime.utcnow)
-    modified_date = Column(DateTime, nullable=True)
+    modified_date = Column(DateTime)
