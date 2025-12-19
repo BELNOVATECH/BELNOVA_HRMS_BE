@@ -21,7 +21,7 @@ from route.job_route import router as job_route
 from route.interview_schedule_route import interview_schedule_router
 from route.interview_stage_route import router as interview_stage_router
 from route.holiday_route import holiday_router
-from route.attendance_route import router as attendance_router
+from route.designation_route import designation_router
 
 # -----------------------------
 # FastAPI App
@@ -58,6 +58,7 @@ app.include_router(employee_router)
 app.include_router(upload_router)
 app.include_router(department_route)
 app.include_router(job_route)
+app.include_router(designation_router)
 
 app.include_router(
     interview_schedule_router,
@@ -77,11 +78,6 @@ app.include_router(
     tags=["Holiday Calendar"]
 )
 
-app.include_router(
-    attendance_router,
-    prefix="/attendance",
-    tags=["Attendance"]
-)
 
 app.include_router(
     job_route,
