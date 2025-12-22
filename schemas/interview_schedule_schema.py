@@ -1,35 +1,50 @@
 from pydantic import BaseModel
-from datetime import date
-from utils.date_utils import convert_date
+from typing import Optional
+from datetime import date, datetime
 
 
-
-class InterviewScheduleCreate(BaseModel):
-    candidate_id: int
-    position_id: int
-    status_id: int
+# =================================================
+# NEW – Schedule interview (from candidate_applied)
+# =================================================
+class ScheduleInterviewRequest(BaseModel):
+    candidate_applied_id: int
     stage_id: int
     interview_date: date
-    rating: int | None = None
-    feedback: str | None = None
     created_by: int
-    
-    # @field_validator("interview_date", mode="before")
-    # def validate_dob(cls, value):
-    #     if isinstance(value, str):
-    #         return convert_date(value)
-    #     return value 
+
+
+class ScheduleInterviewResponse(BaseModel):
+    id: int
+    candidate_id: int
+    stage_id: int
+    interview_date: date
+    is_active: bool
+
+    class Config:
+        from_attributes = True
+
+
+# =================================================
+# CRUD – interview_schedule table
+# =================================================
+class InterviewScheduleCreate(BaseModel):
+    candidate_id: int
+    position_id: Optional[int] = None
+    status_id: Optional[int] = None
+    stage_id: int
+    interview_date: date
+    created_by: Optional[int] = None
 
 
 class InterviewScheduleRead(BaseModel):
     id: int
     candidate_id: int
-    position_id: int
-    status_id: int
+    position_id: Optional[int]
+    status_id: Optional[int]
     stage_id: int
     interview_date: date
-    rating: int | None
-    feedback: str | None
-    created_by: int 
+    is_active: bool
+    created_date: Optional[datetime]
 
-    model_config = {"from_attributes": True}
+    class Config:
+        from_attributes = True

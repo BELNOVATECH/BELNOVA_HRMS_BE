@@ -53,12 +53,17 @@ app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 app.include_router(auth_router)
 app.include_router(leave_router)
 app.include_router(balance_router)
-app.include_router(candidate_router, prefix="/candidates", tags=["Candidates"])
+
+app.include_router(
+    candidate_router,
+    prefix="/candidates",
+    tags=["Candidates"]
+)
+
 app.include_router(employee_router)
 app.include_router(upload_router)
 app.include_router(department_route)
-app.include_router(job_route)
-app.include_router(designation_router)
+# app.include_router(job_route)
 
 app.include_router(
     interview_schedule_router,
@@ -72,6 +77,7 @@ app.include_router(
     tags=["Interview Stage"]
 )
 
+# Holiday
 app.include_router(
     holiday_router,
     prefix="/holidays",
@@ -79,6 +85,7 @@ app.include_router(
 )
 
 
+# Attendance
 app.include_router(
     job_route,
     prefix="/job-openings",

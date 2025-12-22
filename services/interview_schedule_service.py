@@ -1,57 +1,106 @@
-from sqlalchemy import select
+from sqlalchemy.orm import Session
 from fastapi import HTTPException
+from datetime import datetime
+
+from models.candidate_applied_model import CandidateApplied
+from models.interview_stage import InterviewStage
 from models.interview_schedule_model import InterviewSchedule
 
-def create_interview_schedule_service(data, db):
+
+# =================================================
+# NEW – Schedule interview from applied candidate
+# =================================================
+def schedule_interview_service(payload, db: Session):
+
+    candidate = db.query(CandidateApplied).filter(
+        CandidateApplied.id == payload.candidate_applied_id,
+        CandidateApplied.is_active == True
+    ).first()
+
+    if not candidate:
+        raise HTTPException(404, "Candidate application not found")
+
+    stage = db.query(InterviewStage).filter(
+        InterviewStage.id == payload.stage_id,
+        InterviewStage.is_active == True
+    ).first()
+
+    if not stage:
+        raise HTTPException(404, "Interview stage not found")
+
+    exists = db.query(InterviewSchedule).filter(
+        InterviewSchedule.candidate_id == candidate.id,
+        InterviewSchedule.stage_id == payload.stage_id,
+        InterviewSchedule.is_active == True
+    ).first()
+
+    if exists:
+        raise HTTPException(400, "Interview already scheduled for this stage")
+
     interview = InterviewSchedule(
-        candidate_id=data.candidate_id,
-        position_id=data.position_id,
-        status_id=data.status_id,
-        stage_id=data.stage_id,
-        interview_date=data.interview_date,
-        rating=data.rating,
-        feedback=data.feedback,
-        created_by=data.created_by,
+        candidate_id=candidate.id,
+        position_id=candidate.designation_id,
+        status_id=candidate.application_status_id,
+        stage_id=payload.stage_id,
+        interview_date=payload.interview_date,
+        created_by=payload.created_by,
+        created_date=datetime.utcnow(),
+        is_active=True
     )
 
     db.add(interview)
     db.commit()
     db.refresh(interview)
+
     return interview
-def update_interview_schedule_service(db, interview_id, data):
-    interview = db.execute(
-        select(InterviewSchedule).where(InterviewSchedule.id == interview_id)
-    ).scalar_one_or_none()
 
-    if not interview:
-        raise HTTPException(status_code=404, detail="Interview not found")
 
-    interview.candidate_id = data.candidate_id
-    interview.position_id = data.position_id
-    interview.status_id = data.status_id
-    interview.stage_id = data.stage_id
-    interview.interview_date = data.interview_date
-    interview.rating = data.rating
-    interview.feedback = data.feedback
-    interview.created_by = data.created_by
-
+# =================================================
+# CRUD – interview_schedule table
+# =================================================
+def create_interview_schedule_service(payload, db: Session):
+    interview = InterviewSchedule(**payload.dict())
+    db.add(interview)
     db.commit()
     db.refresh(interview)
     return interview
 
-def delete_interview_schedule_service(db, interview_id):
-    interview = db.execute(
-        select(InterviewSchedule).where(InterviewSchedule.id == interview_id)
-    ).scalar_one_or_none()
+
+def get_interview_schedule_service(db: Session):
+    return db.query(InterviewSchedule).filter(
+        InterviewSchedule.is_active == True
+    ).all()
+
+
+def update_interview_schedule_service(db: Session, interview_id: int, payload):
+    interview = db.query(InterviewSchedule).filter(
+        InterviewSchedule.id == interview_id,
+        InterviewSchedule.is_active == True
+    ).first()
 
     if not interview:
-        raise HTTPException(status_code=404, detail="Interview not found")
+        raise HTTPException(404, "Interview schedule not found")
 
-    db.delete(interview)
+    for key, value in payload.dict(exclude_unset=True).items():
+        setattr(interview, key, value)
+
+    interview.modified_date = datetime.utcnow()
     db.commit()
-    return {"message": "Interview deleted successfully"}
+    db.refresh(interview)
+
+    return interview
 
 
-def get_interview_schedule_service(db):
-    result = db.execute(select(InterviewSchedule))
-    return result.scalars().all()
+def delete_interview_schedule_service(db: Session, interview_id: int):
+    interview = db.query(InterviewSchedule).filter(
+        InterviewSchedule.id == interview_id,
+        InterviewSchedule.is_active == True
+    ).first()
+
+    if not interview:
+        raise HTTPException(404, "Interview schedule not found")
+
+    interview.is_active = False
+    db.commit()
+
+    return {"message": "Interview schedule deleted successfully"}
