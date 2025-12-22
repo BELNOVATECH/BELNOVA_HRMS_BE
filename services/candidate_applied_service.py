@@ -1,29 +1,33 @@
 from sqlalchemy import select
+from sqlalchemy.orm import Session
+from fastapi import HTTPException
+
 from models.candidate_applied_model import CandidateApplied
 from schemas.candidate_applied_schema import CandidateAppliedCreate
-from fastapi import HTTPException
 from utils.date_utils import convert_date
 
 
-def create_candidate_applied_service(data: CandidateAppliedCreate, db):
-    # Convert DOB if string
+def create_candidate_applied_service(
+    data: CandidateAppliedCreate,
+    db: Session
+):
     dob = data.dob
     if isinstance(dob, str):
         dob = convert_date(dob)
 
-    # Duplicate email check
-    email_exists = db.execute(
-        select(CandidateApplied).where(CandidateApplied.email == data.email)
-    ).scalar_one_or_none()
-
+    email_exists = (
+        db.query(CandidateApplied)
+        .filter(CandidateApplied.email == data.email)
+        .first()
+    )
     if email_exists:
         raise HTTPException(status_code=400, detail="Email already exists")
 
-    # Duplicate mobile check
-    mobile_exists = db.execute(
-        select(CandidateApplied).where(CandidateApplied.mobile == data.mobile)
-    ).scalar_one_or_none()
-
+    mobile_exists = (
+        db.query(CandidateApplied)
+        .filter(CandidateApplied.mobile == data.mobile)
+        .first()
+    )
     if mobile_exists:
         raise HTTPException(status_code=400, detail="Mobile already exists")
 
@@ -41,14 +45,19 @@ def create_candidate_applied_service(data: CandidateAppliedCreate, db):
     db.add(candidate)
     db.commit()
     db.refresh(candidate)
-
     return candidate
 
 
-def update_candidate_applied_service(id: int, data, db):
-    candidate = db.execute(
-        select(CandidateApplied).where(CandidateApplied.id == id)
-    ).scalar_one_or_none()
+def update_candidate_applied_service(
+    id: int,
+    data,
+    db: Session
+):
+    candidate = (
+        db.query(CandidateApplied)
+        .filter(CandidateApplied.id == id)
+        .first()
+    )
 
     if not candidate:
         raise HTTPException(status_code=404, detail="Candidate not found")
@@ -60,6 +69,10 @@ def update_candidate_applied_service(id: int, data, db):
     db.refresh(candidate)
     return candidate
 
-def get_candidate_applied_service(db):
-    result = db.execute(select(CandidateApplied))
-    return result.scalars().all()
+
+def get_candidate_applied_service(db: Session):
+    return (
+        db.query(CandidateApplied)
+        .filter(CandidateApplied.is_active == True)
+        .all()
+    )
