@@ -17,10 +17,11 @@ from route.candidate_applied_route import candidate_router
 from route.employee_route import router as employee_router
 from route.upload_route import router as upload_router
 from route.department_route import router as department_route
+# from route.job_route import router as job_route
 from route.interview_schedule_route import interview_schedule_router
 from route.interview_stage_route import router as interview_stage_router
 from route.holiday_route import holiday_router
-from route.attendance_route import router as attendance_router
+from route.designation_route import designation_router
 
 # -----------------------------
 # FastAPI App
@@ -62,11 +63,14 @@ app.include_router(
 app.include_router(employee_router)
 app.include_router(upload_router)
 app.include_router(department_route)
+# app.include_router(job_route)
 
-# 🔥 Interview Schedule (PREFIX ALREADY INSIDE ROUTER)
-app.include_router(interview_schedule_router)
+app.include_router(
+    interview_schedule_router,
+    prefix="/interview-schedule",
+    tags=["Interview Schedule"]
+)
 
-# Interview Stage
 app.include_router(
     interview_stage_router,
     prefix="/interview-stage",
@@ -80,13 +84,13 @@ app.include_router(
     tags=["Holiday Calendar"]
 )
 
+
 # Attendance
 app.include_router(
-    attendance_router,
-    prefix="/attendance",
-    tags=["Attendance"]
+    job_route,
+    prefix="/job-openings",
+    tags=["Job Openings"]
 )
-
 # -----------------------------
 # Root Endpoint
 # -----------------------------

@@ -1,13 +1,11 @@
-from pydantic import BaseModel
+from sqlalchemy import Column, Integer, Boolean
+from core.database import Base
 
-class JobTitleCreateRequest(BaseModel):
-    position: str
+class JobOpening(Base):
+    __tablename__ = "job_openings"
 
-class JobTitleResponse(BaseModel):
-    id: int
-    position: str
-    is_active: bool
-    
-
-class IsActiveUpdate(BaseModel):
-    is_active: bool
+    id = Column(Integer, primary_key=True, index=True)
+    designation_id = Column(Integer, nullable=False)
+    department_id = Column(Integer, nullable=False)
+    status_id = Column(Integer, nullable=False)
+    is_active = Column(Boolean, default=True)

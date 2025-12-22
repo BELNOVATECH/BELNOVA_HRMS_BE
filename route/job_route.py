@@ -1,24 +1,43 @@
-from fastapi import APIRouter
-from models.job_title import JobTitleCreateRequest
-from models.job_title import IsActiveUpdate
-from controller.job_title import update_job_is_active_controller
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 
+from core.database import get_db
+from schemas.job_title_schema import (
+    JobOpeningResponse,
+    JobTitleCreate,
+    JobOpeningIsActiveUpdate
+)
 from controller.job_title import (
-    create_job_controller,
-    get_job_controller,
-    get_all_jobs_controller
+    get_all_job_openings_controller,
+    create_job_title_controller,
+    update_job_opening_is_active_controller
 )
 
-router = APIRouter(prefix="/job")
+router = APIRouter(
+    prefix="/job-openings",
+    tags=["Job Openings"]
+)
 
-@router.post("/create")
-def create_job(request: JobTitleCreateRequest):
-    return create_job_controller(request)
 
-@router.get("/all")
-def get_all_jobs():
-    return get_all_jobs_controller()
+@router.get("/", response_model=list[JobOpeningResponse])
+def get_all_job_openings(db: Session = Depends(get_db)):
+    return get_all_job_openings_controller(db)
 
-@router.put("/{job_id}/is-active")
-def update_job_is_active(job_id: int, request: IsActiveUpdate):
-    return update_job_is_active_controller(job_id, request)
+@router.post("/", response_model=JobOpeningResponse)
+def create_job_title(
+    data: JobTitleCreate,
+    db: Session = Depends(get_db)
+):
+    return create_job_title_controller(data, db)
+
+@router.put("/{job_id}", response_model=JobOpeningResponse)
+def update_job_opening_is_active(
+    job_id: int,
+    req: JobOpeningIsActiveUpdate,
+    db: Session = Depends(get_db)
+):
+    return update_job_opening_is_active_controller(
+        job_id,
+        req.is_active,
+        db
+    )
