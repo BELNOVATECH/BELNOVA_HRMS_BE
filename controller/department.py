@@ -1,11 +1,11 @@
 from fastapi import HTTPException
-from services.dept import (
+from services.department_service import (
     create_department,
     get_department,
     get_all_departments
 )
 from models.department import DepartmentCreateRequest, DepartmentResponse
-from services.dept import update_department_is_active
+from services.department_service import update_department_is_active
 
 
 def create_department_controller(request: DepartmentCreateRequest):

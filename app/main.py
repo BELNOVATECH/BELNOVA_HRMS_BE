@@ -10,6 +10,9 @@ from core.database import Base, engine
 # -----------------------------
 # Routers
 # -----------------------------
+import models.department
+import models.designation_model
+
 from route.auth_route import router as auth_router
 from route.leave_route import router as leave_router
 from route.leave_balance_route import router as balance_router
@@ -22,6 +25,9 @@ from route.interview_schedule_route import interview_schedule_router
 from route.interview_stage_route import router as interview_stage_router
 from route.holiday_route import holiday_router
 from route.designation_route import designation_router
+# 🔥 VERY IMPORTANT
+
+
 
 # -----------------------------
 # FastAPI App
@@ -53,6 +59,7 @@ app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 app.include_router(auth_router)
 app.include_router(leave_router)
 app.include_router(balance_router)
+app.include_router(designation_router)
 
 app.include_router(
     candidate_router,
