@@ -1,13 +1,10 @@
-from pydantic import BaseModel
-
-class DepartmentCreateRequest(BaseModel):
-    department: str
-
-class DepartmentResponse(BaseModel):
-    id: int
-    department: str
-    is_active: bool = True
+from sqlalchemy import Column, Integer, String, Boolean
+from core.database import Base
 
 
-class IsActiveUpdate(BaseModel):
-    is_active: bool
+class Department(Base):
+    __tablename__ = "master_department"
+
+    id = Column(Integer, primary_key=True, index=True)
+    department = Column(String(100), nullable=False, unique=True)
+    is_active = Column(Boolean, default=True)
