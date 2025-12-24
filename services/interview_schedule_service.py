@@ -8,7 +8,7 @@ from models.interview_schedule_model import InterviewSchedule
 
 
 # =================================================
-# NEW – Schedule interview from applied candidate
+# Schedule interview from applied candidate
 # =================================================
 def schedule_interview_service(payload, db: Session):
 
@@ -39,8 +39,8 @@ def schedule_interview_service(payload, db: Session):
 
     interview = InterviewSchedule(
         candidate_id=candidate.id,
-        position_id=candidate.designation_id,
-        status_id=candidate.application_status_id,
+        designation_id=payload.designation_id,   # ✅ changed
+        status_id=payload.status_id,
         stage_id=payload.stage_id,
         interview_date=payload.interview_date,
         created_by=payload.created_by,
@@ -56,7 +56,7 @@ def schedule_interview_service(payload, db: Session):
 
 
 # =================================================
-# CRUD – interview_schedule table
+# CRUD
 # =================================================
 def create_interview_schedule_service(payload, db: Session):
     interview = InterviewSchedule(**payload.dict())
