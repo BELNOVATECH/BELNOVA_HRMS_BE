@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, Boolean
 from core.database import Base
 
+
 class JobOpening(Base):
     __tablename__ = "job_openings"
 

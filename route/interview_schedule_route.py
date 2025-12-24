@@ -5,7 +5,6 @@ from typing import List
 from core.database import get_db
 from controller.interview_schedule_controller import (
     schedule_interview_controller,
-    # create_interview_schedule_controller,
     get_interview_schedule_controller,
     update_interview_schedule_controller,
     delete_interview_schedule_controller
@@ -24,7 +23,10 @@ interview_schedule_router = APIRouter(
 )
 
 
-@interview_schedule_router.post("/schedule", response_model=ScheduleInterviewResponse)
+@interview_schedule_router.post(
+    "/schedule",
+    response_model=ScheduleInterviewResponse
+)
 def schedule_interview(
     payload: ScheduleInterviewRequest,
     db: Session = Depends(get_db)
@@ -32,22 +34,18 @@ def schedule_interview(
     return schedule_interview_controller(payload, db)
 
 
-# @interview_schedule_router.post("/", response_model=InterviewScheduleRead)
-# def create_interview_schedule(
-#     payload: InterviewScheduleCreate,
-#     db: Session = Depends(get_db)
-# ):
-#     return create_interview_schedule_controller(payload, db)
-
-
-@interview_schedule_router.get("/", response_model=List[InterviewScheduleRead])
-def get_interview_schedules(
-    db: Session = Depends(get_db)
-):
+@interview_schedule_router.get(
+    "/",
+    response_model=List[InterviewScheduleRead]
+)
+def get_interview_schedules(db: Session = Depends(get_db)):
     return get_interview_schedule_controller(db)
 
 
-@interview_schedule_router.put("/{interview_id}", response_model=InterviewScheduleRead)
+@interview_schedule_router.put(
+    "/{interview_id}",
+    response_model=InterviewScheduleRead
+)
 def update_interview_schedule(
     interview_id: int,
     payload: InterviewScheduleCreate,

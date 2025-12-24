@@ -7,12 +7,10 @@ from services.interview_schedule_service import (
 )
 
 
-# NEW – schedule interview
 def schedule_interview_controller(payload, db):
     return schedule_interview_service(payload, db)
 
 
-# CRUD
 def create_interview_schedule_controller(payload, db):
     return create_interview_schedule_service(payload, db)
 
