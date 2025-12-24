@@ -13,8 +13,8 @@ from schemas.leave_schema import (
     MonthlyLeaveSummaryResponse
 )
 
-STATUS_APPROVED = 1
-STATUS_PENDING = 2
+STATUS_APPROVED = 10
+STATUS_PENDING = 11
 STATUS_REJECTED = 3
 
 
@@ -51,7 +51,7 @@ def apply_leave(payload: ApplyLeaveRequest, db: Session):
         mobile=payload.mobile,
         upload_file=payload.upload_file,
         reporting_manager_id=payload.reporting_manager_id,
-        approval_status_id=STATUS_PENDING,
+        status_id=STATUS_PENDING,
         created_by=employee.user_id,
         created_date=datetime.utcnow(),
         is_active=True
@@ -91,7 +91,7 @@ def apply_leave(payload: ApplyLeaveRequest, db: Session):
         "id": leave.id,
         "leavetype_id": leave.leavetype_id,
         "leavetype_name": row["leave_type"],
-        "approval_status_id": leave.approval_status_id,
+        "status_id": leave.status_id,
         "created_date": leave.created_date
     }
 
@@ -109,16 +109,16 @@ def approve_or_reject_leave(payload: LeaveApprovalRequest, db: Session):
     if not leave:
         raise HTTPException(404, "Leave not found")
 
-    if leave.approval_status_id != STATUS_PENDING:
+    if leave.status_id != STATUS_PENDING:
         raise HTTPException(400, "Leave already processed")
 
     action = payload.action.lower()
 
     if action == "approve":
-        leave.approval_status_id = STATUS_APPROVED
+        leave.status_id = STATUS_APPROVED
         status_text = "Approved"
     elif action == "reject":
-        leave.approval_status_id = STATUS_REJECTED
+        leave.status_id = STATUS_REJECTED
         status_text = "Rejected"
     else:
         raise HTTPException(400, "Invalid action")
@@ -134,7 +134,7 @@ def approve_or_reject_leave(payload: LeaveApprovalRequest, db: Session):
 
     return {
         "leave_id": leave.id,
-        "approval_status_id": leave.approval_status_id,
+        "status_id": leave.status_id,
         "approval_status": status_text,
         "approver_id": leave.approver_id,
         "remarks": leave.remarks,

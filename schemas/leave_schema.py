@@ -22,7 +22,7 @@ class ApplyLeaveResponse(BaseModel):
     id: int
     leavetype_id: int
     leavetype_name: str
-    approval_status_id: int
+    status_id: int
     created_date: datetime
 
 
@@ -38,7 +38,7 @@ class LeaveApprovalRequest(BaseModel):
 
 class LeaveApprovalResponse(BaseModel):
     leave_id: int
-    approval_status_id: int
+    status_id: int
     approval_status: str
     approver_id: int
     remarks: Optional[str]
@@ -54,8 +54,8 @@ class LeaveHistoryResponse(BaseModel):
     start_date: date
     end_date: date
     total_days: float
-    approval_status_id: int
-    approval_status: str
+    status_id: int
+    status_name: str
     reason: Optional[str]
 
 

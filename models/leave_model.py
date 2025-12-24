@@ -34,7 +34,7 @@ class LeaveRequest(Base):
     reason = Column(String(255), nullable=True)
 
     # 1 = Approved | 2 = Pending | 3 = Rejected
-    approval_status_id = Column(Integer, default=2, nullable=False)
+    status_id = Column(Integer, default=2, nullable=False)
 
     approver_id = Column(Integer, nullable=True)
 

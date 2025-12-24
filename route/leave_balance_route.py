@@ -11,21 +11,18 @@ router = APIRouter(
 )
 
 
-@router.get(
-    "/balance",
-    response_model=LeaveBalanceResponse
-)
+@router.get("/balance", response_model=LeaveBalanceResponse)
 def get_leave_balance(
     emp_id: int = Query(..., description="Employee ID"),
     year: int = Query(..., description="Year (e.g. 2025)"),
-    month: int = Query(..., description="Month (1-12)"),
+    limit: int = Query(10, description="Pagination limit"),
     offset: int = Query(0, description="Pagination offset"),
     db: Session = Depends(get_db)
 ):
     return leave_balance_controller(
         emp_id=emp_id,
         year=year,
-        month=month,
+        limit=limit,
         offset=offset,
         db=db
     )

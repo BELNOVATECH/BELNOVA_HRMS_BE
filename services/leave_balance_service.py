@@ -8,7 +8,7 @@ from services.employee_validator import validate_employee
 def leave_balance_controller(
     emp_id: int,
     year: int,
-    month: int,
+    limit: int,
     offset: int,
     db: Session
 ):
@@ -22,14 +22,14 @@ def leave_balance_controller(
                 FROM fn_leave_balance(
                     :emp_id,
                     :year,
-                    :month,
+                    :limit,
                     :offset
                 )
             """),
             {
                 "emp_id": emp_id,
                 "year": year,
-                "month": month,
+                "limit": limit,
                 "offset": offset
             }
         )
@@ -42,10 +42,8 @@ def leave_balance_controller(
             detail=f"Database error: {str(e)}"
         )
 
-    # ✅ Always return same structure
     return {
         "emp_id": emp_id,
         "year": year,
-        "month": month,
         "leaves": rows
     }
