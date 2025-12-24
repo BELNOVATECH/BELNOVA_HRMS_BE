@@ -7,7 +7,7 @@ from datetime import date, datetime
 # Schedule interview (POST)
 # ===============================
 class ScheduleInterviewRequest(BaseModel):
-    candidate_applied_id: int
+    candidate_id: int
     designation_id: int        # ✅ added
     status_id: int             # ✅ added
     stage_id: int
