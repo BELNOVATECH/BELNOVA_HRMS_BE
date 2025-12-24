@@ -18,12 +18,26 @@ from services.leave_service import (
     monthly_leave_summary_service
 )
 
+from services.leave_service import pending_leaves
+
+
 router = APIRouter(prefix="/leave", tags=["Leave Management"])
 
 
 @router.post("/apply", response_model=ApplyLeaveResponse)
 def apply_leave_api(payload: ApplyLeaveRequest, db: Session = Depends(get_db)):
     return apply_leave(payload, db)
+
+
+@router.get("/pending/{emp_id}", response_model=list[LeaveHistoryResponse])
+def get_pending_leaves(
+    emp_id: int,
+    limit: int = 10,
+    offset: int = 0,
+    db: Session = Depends(get_db)
+):
+    return pending_leaves(emp_id, limit, offset, db)
+
 
 
 @router.post("/approve-reject", response_model=LeaveApprovalResponse)

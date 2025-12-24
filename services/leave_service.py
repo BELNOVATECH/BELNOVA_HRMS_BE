@@ -212,3 +212,28 @@ def monthly_leave_summary_service(emp_id: int, year: int, month: int, db: Sessio
         total_leaves=total,
         leaves=items
     )
+
+def pending_leaves(emp_id: int, limit: int, offset: int, db: Session):
+    validate_employee(emp_id, db)
+
+    result = db.execute(
+        text("""
+            SELECT *
+            FROM fn_leave_request_get_list(:emp_id, :limit, :offset)
+            WHERE status_id = :pending_status
+        """),
+        {
+            "emp_id": emp_id,
+            "limit": limit,
+            "offset": offset,
+            "pending_status": STATUS_PENDING  # 11
+        }
+    )
+
+    rows = result.mappings().all()
+
+    if not rows:
+        return []
+
+    return rows
+
