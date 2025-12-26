@@ -13,7 +13,7 @@ from models.interview_schedule_model import InterviewSchedule
 def schedule_interview_service(payload, db: Session):
 
     candidate = db.query(CandidateApplied).filter(
-        CandidateApplied.id == payload.candidate_applied_id,
+        CandidateApplied.id == payload.candidate_id,
         CandidateApplied.is_active == True
     ).first()
 
