@@ -13,32 +13,33 @@ from schemas.leave_schema import (
     MonthlyLeaveSummaryResponse
 )
 
+# master_status IDs
 STATUS_APPROVED = 10
 STATUS_PENDING = 11
 STATUS_REJECTED = 3
 
 
 # =================================================
-# APPLY LEAVE (WITH LEAVE TYPE NAME USING DB FUNCTION)
+# APPLY LEAVE
 # =================================================
 def apply_leave(payload: ApplyLeaveRequest, db: Session):
 
-    # ✅ Validate employee
     employee = validate_employee(payload.emp_id, db)
 
-    # ✅ Prevent duplicate leave
+    # 🚫 BLOCK ANY OVERLAPPING LEAVE (ANY TYPE)
     exists = db.query(LeaveRequest).filter(
         LeaveRequest.emp_id == payload.emp_id,
-        LeaveRequest.leavetype_id == payload.leavetype_id,
-        LeaveRequest.start_date == payload.start_date,
-        LeaveRequest.end_date == payload.end_date,
-        LeaveRequest.is_active == True
+        LeaveRequest.is_active == True,
+        LeaveRequest.start_date <= payload.end_date,
+        LeaveRequest.end_date >= payload.start_date
     ).first()
 
     if exists:
-        raise HTTPException(status_code=400, detail="Leave already applied")
+        raise HTTPException(
+            status_code=400,
+            detail="Leave already applied for the selected date(s)"
+        )
 
-    # ✅ Insert leave
     leave = LeaveRequest(
         emp_id=payload.emp_id,
         leavetype_id=payload.leavetype_id,
@@ -61,36 +62,21 @@ def apply_leave(payload: ApplyLeaveRequest, db: Session):
     db.commit()
     db.refresh(leave)
 
-    # =================================================
-    # 🔥 FETCH LEAVE TYPE NAME USING EXISTING DB FUNCTION
-    # =================================================
+    # Fetch leave type name
     result = db.execute(
         text("""
             SELECT *
-            FROM fn_leave_request_get_list(
-                :emp_id, :limit, :offset
-            )
+            FROM fn_leave_request_get_list(:emp_id, 1, 0)
         """),
-        {
-            "emp_id": payload.emp_id,
-            "limit": 1,
-            "offset": 0
-        }
+        {"emp_id": payload.emp_id}
     )
 
     row = result.mappings().first()
 
-    if not row:
-        raise HTTPException(
-            status_code=500,
-            detail="Unable to fetch leave type after apply"
-        )
-
-    # ✅ Final response
     return {
         "id": leave.id,
         "leavetype_id": leave.leavetype_id,
-        "leavetype_name": row["leave_type"],
+        "leavetype_name": row["leave_type"] if row else "",
         "status_id": leave.status_id,
         "created_date": leave.created_date
     }
@@ -143,7 +129,7 @@ def approve_or_reject_leave(payload: LeaveApprovalRequest, db: Session):
 
 
 # =================================================
-# LEAVE HISTORY (DB FUNCTION)
+# LEAVE HISTORY (ALL STATUSES)
 # =================================================
 def leave_history(emp_id: int, limit: int, offset: int, db: Session):
 
@@ -161,12 +147,31 @@ def leave_history(emp_id: int, limit: int, offset: int, db: Session):
         }
     )
 
-    rows = result.mappings().all()
+    return result.mappings().all()
 
-    if not rows:
-        raise HTTPException(404, "No leave history found")
 
-    return rows
+# =================================================
+# PENDING LEAVES (ONLY PENDING)
+# =================================================
+def pending_leaves(emp_id: int, limit: int, offset: int, db: Session):
+
+    validate_employee(emp_id, db)
+
+    result = db.execute(
+        text("""
+            SELECT *
+            FROM fn_leave_request_get_list(:emp_id, :limit, :offset)
+            WHERE status_id = :status_id
+        """),
+        {
+            "emp_id": emp_id,
+            "limit": limit,
+            "offset": offset,
+            "status_id": STATUS_PENDING
+        }
+    )
+
+    return result.mappings().all()
 
 
 # =================================================
@@ -212,28 +217,3 @@ def monthly_leave_summary_service(emp_id: int, year: int, month: int, db: Sessio
         total_leaves=total,
         leaves=items
     )
-
-def pending_leaves(emp_id: int, limit: int, offset: int, db: Session):
-    validate_employee(emp_id, db)
-
-    result = db.execute(
-        text("""
-            SELECT *
-            FROM fn_leave_request_get_list(:emp_id, :limit, :offset)
-            WHERE status_id = :pending_status
-        """),
-        {
-            "emp_id": emp_id,
-            "limit": limit,
-            "offset": offset,
-            "pending_status": STATUS_PENDING  # 11
-        }
-    )
-
-    rows = result.mappings().all()
-
-    if not rows:
-        return []
-
-    return rows
-

@@ -26,8 +26,6 @@ class ApplyLeaveResponse(BaseModel):
     created_date: datetime
 
 
-
-
 # ================= APPROVE / REJECT =================
 class LeaveApprovalRequest(BaseModel):
     leave_id: int
@@ -45,7 +43,7 @@ class LeaveApprovalResponse(BaseModel):
     modified_date: datetime
 
 
-# ================= HISTORY =================
+# ================= HISTORY / PENDING =================
 class LeaveHistoryResponse(BaseModel):
     leave_request_id: int
     emp_id: int
