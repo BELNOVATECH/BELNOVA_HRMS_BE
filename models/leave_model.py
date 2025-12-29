@@ -1,12 +1,6 @@
 from sqlalchemy import (
-    Column,
-    Integer,
-    String,
-    Date,
-    DateTime,
-    Boolean,
-    Float,
-    ForeignKey
+    Column, Integer, String, Date, DateTime,
+    Boolean, Float, ForeignKey
 )
 from sqlalchemy.orm import relationship
 from core.database import Base
@@ -33,18 +27,18 @@ class LeaveRequest(Base):
 
     reason = Column(String(255), nullable=True)
 
-    # 1 = Approved | 2 = Pending | 3 = Rejected
-    status_id = Column(Integer, default=2, nullable=False)
+    # master_status
+    # 10 = Approved | 11 = Pending | 3 = Rejected
+    status_id = Column(Integer, default=11, nullable=False)
 
     approver_id = Column(Integer, nullable=True)
+    approved_on = Column(DateTime, nullable=True)
 
     created_by = Column(Integer, nullable=True)
     created_date = Column(DateTime, default=datetime.utcnow)
 
     modified_by = Column(Integer, nullable=True)
     modified_date = Column(DateTime, nullable=True)
-
-    approved_on = Column(DateTime, nullable=True)
 
     remarks = Column(String(255), nullable=True)
 
