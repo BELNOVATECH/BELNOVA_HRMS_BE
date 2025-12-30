@@ -10,8 +10,8 @@ class ApplyLeaveRequest(BaseModel):
     start_date: date
     end_date: date
     reason: Optional[str]
-    from_date_session_id: str   # "1" or "2"
-    to_date_session_id: str     # "1" or "2"
+    from_date_session_id: str  # "1" or "2"
+    to_date_session_id: str    # "1" or "2"
     mobile: Optional[str]
     upload_file: Optional[str]
     reporting_manager_id: Optional[int]
@@ -20,7 +20,7 @@ class ApplyLeaveRequest(BaseModel):
 class ApplyLeaveResponse(BaseModel):
     id: int
     leavetype_id: int
-    leavetype_name: str
+    leave_type: str
     status_id: int
     created_date: datetime
 
@@ -28,7 +28,7 @@ class ApplyLeaveResponse(BaseModel):
 # ================= APPROVE / REJECT =================
 class LeaveApprovalRequest(BaseModel):
     leave_id: int
-    action: str
+    action: str        # approve | reject
     approver_id: int
     remarks: Optional[str]
 

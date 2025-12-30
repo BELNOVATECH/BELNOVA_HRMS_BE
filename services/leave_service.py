@@ -13,48 +13,11 @@ from schemas.leave_schema import (
     MonthlyLeaveSummaryResponse
 )
 
-# master_status IDs
 STATUS_APPROVED = 10
 STATUS_PENDING = 11
 STATUS_REJECTED = 3
 
 
-
-# =================================================
-# SESSION-BASED LEAVE CALCULATION  ✅ PUT HERE
-# =================================================
-def calculate_total_days(
-    start_date: date,
-    end_date: date,
-    from_session_id: str,
-    to_session_id: str
-) -> float:
-    """
-    Session:
-    1 = Morning
-    2 = Afternoon
-    """
-
-    from_sess = int(from_session_id)
-    to_sess = int(to_session_id)
-
-    # Same day
-    if start_date == end_date:
-        if from_sess == 1 and to_sess == 2:
-            return 1.0
-        return 0.5
-
-    # Base days
-    days = (end_date - start_date).days + 1
-
-    # Session adjustments
-    if from_sess == 2:
-        days -= 0.5
-
-    if to_sess == 1:
-        days -= 0.5
-
-    return float(days)
 # =================================================
 # SESSION-BASED LEAVE CALCULATION
 # =================================================
@@ -64,37 +27,33 @@ def calculate_total_days(
     from_session_id: str,
     to_session_id: str
 ) -> float:
-    """
-    Session rules:
-    1 = Morning
-    2 = Afternoon
-    """
 
     from_sess = int(from_session_id)
     to_sess = int(to_session_id)
 
-    # Same day → always half day
     if start_date == end_date:
+        if from_sess == 1 and to_sess == 2:
+            return 1.0
         return 0.5
 
-    # Base days
     days = (end_date - start_date).days + 1
 
-    # Afternoon → Morning = minus one day
-    if from_sess == 2 and to_sess == 1:
-        days -= 1
+    if from_sess == 2:
+        days -= 0.5
+
+    if to_sess == 1:
+        days -= 0.5
 
     return float(days)
 
 
 # =================================================
-# APPLY LEAVE
+# APPLY LEAVE  ✅ MAIN FIX HERE
 # =================================================
 def apply_leave(payload: ApplyLeaveRequest, db: Session):
 
     employee = validate_employee(payload.emp_id, db)
 
-    # 🚫 BLOCK OVERLAPPING LEAVE
     exists = db.query(LeaveRequest).filter(
         LeaveRequest.emp_id == payload.emp_id,
         LeaveRequest.is_active == True,
@@ -103,7 +62,19 @@ def apply_leave(payload: ApplyLeaveRequest, db: Session):
     ).first()
 
     if exists:
-        raise HTTPException(400, "Leave already applied for selected date(s)")
+        raise HTTPException(400, "Leave already applied for selected dates")
+
+    leave_type = db.execute(
+        text("""
+            SELECT leave_type
+            FROM master_leavetype
+            WHERE id = :id AND is_active = true
+        """),
+        {"id": payload.leavetype_id}
+    ).scalar()
+
+    if not leave_type:
+        raise HTTPException(400, "Invalid leave type")
 
     total_days = calculate_total_days(
         payload.start_date,
@@ -134,16 +105,10 @@ def apply_leave(payload: ApplyLeaveRequest, db: Session):
     db.commit()
     db.refresh(leave)
 
-    # fetch leave type name
-    row = db.execute(
-        text("SELECT * FROM fn_leave_request_get_list(:emp_id, 1, 0)"),
-        {"emp_id": payload.emp_id}
-    ).mappings().first()
-
     return {
         "id": leave.id,
         "leavetype_id": leave.leavetype_id,
-        "leavetype_name": row["leave_type"] if row else "",
+        "leave_type": leave_type,   # ✅ ALWAYS MATCHES
         "status_id": leave.status_id,
         "created_date": leave.created_date
     }
@@ -194,47 +159,33 @@ def approve_or_reject_leave(payload: LeaveApprovalRequest, db: Session):
 
 
 # =================================================
-# LEAVE HISTORY
+# HISTORY / PENDING / MONTHLY (UNCHANGED, SAFE)
 # =================================================
 def leave_history(emp_id: int, limit: int, offset: int, db: Session):
-
     validate_employee(emp_id, db)
-
-    result = db.execute(
+    return db.execute(
         text("SELECT * FROM fn_leave_request_get_list(:emp_id, :limit, :offset)"),
         {"emp_id": emp_id, "limit": limit, "offset": offset}
-    )
-
-    return result.mappings().all()
+    ).mappings().all()
 
 
-# =================================================
-# PENDING LEAVES
-# =================================================
 def pending_leaves(emp_id: int, limit: int, offset: int, db: Session):
-
     validate_employee(emp_id, db)
-
-    result = db.execute(
+    return db.execute(
         text("""
             SELECT *
             FROM fn_leave_request_get_list(:emp_id, :limit, :offset)
-            WHERE status_id = :status_id
+            WHERE status_id = :status
         """),
         {
             "emp_id": emp_id,
             "limit": limit,
             "offset": offset,
-            "status_id": STATUS_PENDING
+            "status": STATUS_PENDING
         }
-    )
-
-    return result.mappings().all()
+    ).mappings().all()
 
 
-# =================================================
-# MONTHLY SUMMARY
-# =================================================
 def monthly_leave_summary_service(emp_id: int, year: int, month: int, db: Session):
 
     validate_employee(emp_id, db)
