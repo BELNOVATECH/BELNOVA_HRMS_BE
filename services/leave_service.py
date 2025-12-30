@@ -19,6 +19,74 @@ STATUS_PENDING = 11
 STATUS_REJECTED = 3
 
 
+
+# =================================================
+# SESSION-BASED LEAVE CALCULATION  ✅ PUT HERE
+# =================================================
+def calculate_total_days(
+    start_date: date,
+    end_date: date,
+    from_session_id: str,
+    to_session_id: str
+) -> float:
+    """
+    Session:
+    1 = Morning
+    2 = Afternoon
+    """
+
+    from_sess = int(from_session_id)
+    to_sess = int(to_session_id)
+
+    # Same day
+    if start_date == end_date:
+        if from_sess == 1 and to_sess == 2:
+            return 1.0
+        return 0.5
+
+    # Base days
+    days = (end_date - start_date).days + 1
+
+    # Session adjustments
+    if from_sess == 2:
+        days -= 0.5
+
+    if to_sess == 1:
+        days -= 0.5
+
+    return float(days)
+# =================================================
+# SESSION-BASED LEAVE CALCULATION
+# =================================================
+def calculate_total_days(
+    start_date: date,
+    end_date: date,
+    from_session_id: str,
+    to_session_id: str
+) -> float:
+    """
+    Session rules:
+    1 = Morning
+    2 = Afternoon
+    """
+
+    from_sess = int(from_session_id)
+    to_sess = int(to_session_id)
+
+    # Same day → always half day
+    if start_date == end_date:
+        return 0.5
+
+    # Base days
+    days = (end_date - start_date).days + 1
+
+    # Afternoon → Morning = minus one day
+    if from_sess == 2 and to_sess == 1:
+        days -= 1
+
+    return float(days)
+
+
 # =================================================
 # APPLY LEAVE
 # =================================================
@@ -26,7 +94,7 @@ def apply_leave(payload: ApplyLeaveRequest, db: Session):
 
     employee = validate_employee(payload.emp_id, db)
 
-    # 🚫 BLOCK ANY OVERLAPPING LEAVE (ANY TYPE)
+    # 🚫 BLOCK OVERLAPPING LEAVE
     exists = db.query(LeaveRequest).filter(
         LeaveRequest.emp_id == payload.emp_id,
         LeaveRequest.is_active == True,
@@ -35,20 +103,24 @@ def apply_leave(payload: ApplyLeaveRequest, db: Session):
     ).first()
 
     if exists:
-        raise HTTPException(
-            status_code=400,
-            detail="Leave already applied for the selected date(s)"
-        )
+        raise HTTPException(400, "Leave already applied for selected date(s)")
+
+    total_days = calculate_total_days(
+        payload.start_date,
+        payload.end_date,
+        payload.from_date_session_id,
+        payload.to_date_session_id
+    )
 
     leave = LeaveRequest(
         emp_id=payload.emp_id,
         leavetype_id=payload.leavetype_id,
         start_date=payload.start_date,
         end_date=payload.end_date,
-        total_days=payload.total_days,
+        total_days=total_days,
         reason=payload.reason,
-        from_date_session=payload.from_date_session,
-        to_date_session=payload.to_date_session,
+        from_date_session_id=payload.from_date_session_id,
+        to_date_session_id=payload.to_date_session_id,
         mobile=payload.mobile,
         upload_file=payload.upload_file,
         reporting_manager_id=payload.reporting_manager_id,
@@ -62,16 +134,11 @@ def apply_leave(payload: ApplyLeaveRequest, db: Session):
     db.commit()
     db.refresh(leave)
 
-    # Fetch leave type name
-    result = db.execute(
-        text("""
-            SELECT *
-            FROM fn_leave_request_get_list(:emp_id, 1, 0)
-        """),
+    # fetch leave type name
+    row = db.execute(
+        text("SELECT * FROM fn_leave_request_get_list(:emp_id, 1, 0)"),
         {"emp_id": payload.emp_id}
-    )
-
-    row = result.mappings().first()
+    ).mappings().first()
 
     return {
         "id": leave.id,
@@ -83,7 +150,7 @@ def apply_leave(payload: ApplyLeaveRequest, db: Session):
 
 
 # =================================================
-# APPROVE / REJECT LEAVE
+# APPROVE / REJECT
 # =================================================
 def approve_or_reject_leave(payload: LeaveApprovalRequest, db: Session):
 
@@ -98,12 +165,10 @@ def approve_or_reject_leave(payload: LeaveApprovalRequest, db: Session):
     if leave.status_id != STATUS_PENDING:
         raise HTTPException(400, "Leave already processed")
 
-    action = payload.action.lower()
-
-    if action == "approve":
+    if payload.action.lower() == "approve":
         leave.status_id = STATUS_APPROVED
         status_text = "Approved"
-    elif action == "reject":
+    elif payload.action.lower() == "reject":
         leave.status_id = STATUS_REJECTED
         status_text = "Rejected"
     else:
@@ -129,29 +194,22 @@ def approve_or_reject_leave(payload: LeaveApprovalRequest, db: Session):
 
 
 # =================================================
-# LEAVE HISTORY (ALL STATUSES)
+# LEAVE HISTORY
 # =================================================
 def leave_history(emp_id: int, limit: int, offset: int, db: Session):
 
     validate_employee(emp_id, db)
 
     result = db.execute(
-        text("""
-            SELECT *
-            FROM fn_leave_request_get_list(:emp_id, :limit, :offset)
-        """),
-        {
-            "emp_id": emp_id,
-            "limit": limit,
-            "offset": offset
-        }
+        text("SELECT * FROM fn_leave_request_get_list(:emp_id, :limit, :offset)"),
+        {"emp_id": emp_id, "limit": limit, "offset": offset}
     )
 
     return result.mappings().all()
 
 
 # =================================================
-# PENDING LEAVES (ONLY PENDING)
+# PENDING LEAVES
 # =================================================
 def pending_leaves(emp_id: int, limit: int, offset: int, db: Session):
 
@@ -197,7 +255,6 @@ def monthly_leave_summary_service(emp_id: int, year: int, month: int, db: Sessio
         eff_start = max(leave.start_date, start)
         eff_end = min(leave.end_date, end)
         days = (eff_end - eff_start).days + 1
-
         total += days
 
         items.append(
