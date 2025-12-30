@@ -23,33 +23,33 @@ class LeaveRequest(Base):
 
     start_date = Column(Date, nullable=False)
     end_date = Column(Date, nullable=False)
-    total_days = Column(Float, nullable=True)
+    total_days = Column(Float, nullable=False)
 
-    reason = Column(String(255), nullable=True)
+    reason = Column(String(255))
 
     # master_status
     # 10 = Approved | 11 = Pending | 3 = Rejected
     status_id = Column(Integer, default=11, nullable=False)
 
-    approver_id = Column(Integer, nullable=True)
-    approved_on = Column(DateTime, nullable=True)
+    approver_id = Column(Integer)
+    approved_on = Column(DateTime)
 
-    created_by = Column(Integer, nullable=True)
+    created_by = Column(Integer)
     created_date = Column(DateTime, default=datetime.utcnow)
 
-    modified_by = Column(Integer, nullable=True)
-    modified_date = Column(DateTime, nullable=True)
+    modified_by = Column(Integer)
+    modified_date = Column(DateTime)
 
-    remarks = Column(String(255), nullable=True)
-
+    remarks = Column(String(255))
     is_active = Column(Boolean, default=True)
 
-    reporting_manager_id = Column(Integer, nullable=True)
+    reporting_manager_id = Column(Integer)
 
-    from_date_session = Column(String(20), nullable=True)
-    to_date_session = Column(String(20), nullable=True)
+    # 1 = Morning | 2 = Afternoon
+    from_date_session_id = Column(String(1))
+    to_date_session_id = Column(String(1))
 
-    mobile = Column(String(20), nullable=True)
-    upload_file = Column(String(255), nullable=True)
+    mobile = Column(String(20))
+    upload_file = Column(String(255))
 
     employee = relationship("Employee", backref="leaves")

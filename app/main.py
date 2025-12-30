@@ -25,6 +25,7 @@ from route.interview_schedule_route import interview_schedule_router
 from route.interview_stage_route import router as interview_stage_router
 from route.holiday_route import holiday_router
 from route.designation_route import designation_router
+from route.payroll_route import router as payroll_router
 # 🔥 VERY IMPORTANT
 
 
@@ -60,6 +61,7 @@ app.include_router(auth_router)
 app.include_router(leave_router)
 app.include_router(balance_router)
 app.include_router(designation_router)
+app.include_router(payroll_router)
 
 app.include_router(
     candidate_router,
