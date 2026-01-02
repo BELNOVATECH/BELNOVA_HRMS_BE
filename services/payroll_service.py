@@ -115,7 +115,14 @@ def get_payroll_preview(
     return {
         "employee": {
             "id": emp.id,
-            "name": f"{emp.first_name} {emp.last_name}"
+            "name": f"{emp.first_name} {emp.last_name}",
+            "emp_code": emp.emp_code,
+            "designation_id": emp.designation_id,
+            "join_date": emp.join_date,
+            "bank_account_no": emp.bank_ac_no,
+            "ifsc_code": emp.ifsc_code,
+            "uan": emp.uan,
+            "pan": emp.pan
         },
         "period": f"{month}/{year}",
 
