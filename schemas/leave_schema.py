@@ -3,7 +3,7 @@ from datetime import date, datetime
 from typing import Optional, List
 
 
-# ================= APPLY LEAVE =================
+
 class ApplyLeaveRequest(BaseModel):
     emp_id: int
     leavetype_id: int
@@ -25,7 +25,6 @@ class ApplyLeaveResponse(BaseModel):
     created_date: datetime
 
 
-# ================= APPROVE / REJECT =================
 class LeaveApprovalRequest(BaseModel):
     leave_id: int
     action: str        # approve | reject
@@ -42,7 +41,6 @@ class LeaveApprovalResponse(BaseModel):
     modified_date: datetime
 
 
-# ================= HISTORY / PENDING =================
 class LeaveHistoryResponse(BaseModel):
     leave_request_id: int
     emp_id: int
@@ -56,7 +54,6 @@ class LeaveHistoryResponse(BaseModel):
     reason: Optional[str]
 
 
-# ================= MONTHLY SUMMARY =================
 class MonthlyLeaveItem(BaseModel):
     leave_id: int
     start_date: date

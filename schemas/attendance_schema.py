@@ -2,18 +2,14 @@ from pydantic import BaseModel
 from typing import Optional
 from datetime import date, datetime, timedelta
 
-# =====================================
-# REQUEST SCHEMA (LOGIN)
-# =====================================
+
 class AttendanceLoginRequest(BaseModel):
     emp_id: int
     working_status_id: int = 1
     remarks: Optional[str] = None
 
 
-# =====================================
-# RESPONSE SCHEMA (LOGIN / LOGOUT)
-# =====================================
+
 class AttendanceResponse(BaseModel):
     id: int
     emp_id: int
@@ -26,9 +22,7 @@ class AttendanceResponse(BaseModel):
     is_active: bool
 
 
-# =====================================
-# READ / REPORT SCHEMA
-# =====================================
+
 class AttendanceRead(BaseModel):
     id: int
     emp_id: int

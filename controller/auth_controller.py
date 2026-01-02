@@ -8,21 +8,18 @@ class RegisterUser(BaseModel):
     password: str
     confirm_password: str
 
-    # Email Validation: only @gmail.com accepted
     @validator("email")
     def validate_email(cls, v):
         if not v.endswith("@gmail.com"):
             raise ValueError("Only @gmail.com email addresses are allowed")
         return v
 
-    # Phone Validation: 10 digits, must start with 6-9
     @validator("phone")
     def validate_phone(cls, v):
         if not re.fullmatch(r"[6-9]\d{9}", v):
             raise ValueError("Enter a valid 10-digit Indian phone number")
         return v
 
-    # Password validation rules
     @validator("password")
     def validate_password(cls, v):
         pattern = r"^[A-Z](?=.*[0-9])(?=.*[^A-Za-z0-9]).{6,}$"

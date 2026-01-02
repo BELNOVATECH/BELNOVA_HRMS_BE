@@ -7,9 +7,7 @@ from models.interview_stage import InterviewStage
 from models.interview_schedule_model import InterviewSchedule
 
 
-# =================================================
-# Schedule interview from applied candidate
-# =================================================
+
 def schedule_interview_service(payload, db: Session):
 
     candidate = db.query(CandidateApplied).filter(
@@ -55,9 +53,7 @@ def schedule_interview_service(payload, db: Session):
     return interview
 
 
-# =================================================
-# CRUD
-# =================================================
+
 def create_interview_schedule_service(payload, db: Session):
     interview = InterviewSchedule(**payload.dict())
     db.add(interview)
