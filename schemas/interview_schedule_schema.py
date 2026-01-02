@@ -3,9 +3,6 @@ from typing import Optional
 from datetime import date, datetime
 
 
-# ===============================
-# Schedule interview (POST)
-# ===============================
 class ScheduleInterviewRequest(BaseModel):
     candidate_id: int
     designation_id: int        # ✅ added
@@ -28,9 +25,7 @@ class ScheduleInterviewResponse(BaseModel):
         from_attributes = True
 
 
-# ===============================
-# CRUD schemas
-# ===============================
+
 class InterviewScheduleCreate(BaseModel):
     candidate_id: int
     designation_id: int        # ✅ changed

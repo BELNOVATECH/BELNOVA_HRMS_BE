@@ -8,9 +8,7 @@ import pandas as pd
 from models.attendance_tracker import AttendanceTracker
 from services.attendance_service import get_attendance_service
 
-# -----------------------------
-# Time Utils
-# -----------------------------
+
 IST_OFFSET = timedelta(hours=5, minutes=30)
 
 def format_time(dt):
@@ -39,9 +37,7 @@ def build_response(attendance: AttendanceTracker):
         "is_active": attendance.is_active
     }
 
-# -----------------------------
-# LOGIN
-# -----------------------------
+
 def login_controller(req, db: Session):
     today = date.today()
 
@@ -71,9 +67,7 @@ def login_controller(req, db: Session):
 
     return build_response(attendance)
 
-# -----------------------------
-# LOGOUT
-# -----------------------------
+
 def logout_controller(emp_id: int, db: Session):
     today = date.today()
 
@@ -95,9 +89,7 @@ def logout_controller(emp_id: int, db: Session):
 
     return build_response(attendance)
 
-# -----------------------------
-# TODAY STATUS
-# -----------------------------
+
 def today_status_controller(emp_id: int, db: Session):
     today = date.today()
 
@@ -111,9 +103,7 @@ def today_status_controller(emp_id: int, db: Session):
 
     return build_response(attendance)
 
-# -----------------------------
-# EMPLOYEE ATTENDANCE HISTORY
-# -----------------------------
+
 def get_attendance_by_emp_controller(emp_id: int, db: Session):
     records = db.query(AttendanceTracker).filter(
         AttendanceTracker.emp_id == emp_id
@@ -124,9 +114,7 @@ def get_attendance_by_emp_controller(emp_id: int, db: Session):
 
     return [build_response(r) for r in records]
 
-# -----------------------------
-# DELETE ATTENDANCE
-# -----------------------------
+
 def delete_attendance_by_id_controller(attendance_id: int, db: Session):
     attendance = db.query(AttendanceTracker).filter(
         AttendanceTracker.id == attendance_id
@@ -143,9 +131,7 @@ def delete_attendance_by_id_controller(attendance_id: int, db: Session):
         "attendance_id": attendance_id
     }
 
-# -----------------------------
-# REPORT / EXPORT
-# -----------------------------
+
 def get_attendance_controller(
     db: Session,
     emp_id=None,

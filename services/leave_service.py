@@ -18,9 +18,7 @@ STATUS_PENDING = 11
 STATUS_REJECTED = 3
 
 
-# =================================================
-# SESSION-BASED LEAVE CALCULATION
-# =================================================
+
 def calculate_total_days(
     start_date: date,
     end_date: date,
@@ -47,9 +45,7 @@ def calculate_total_days(
     return float(days)
 
 
-# =================================================
-# APPLY LEAVE  ✅ MAIN FIX HERE
-# =================================================
+
 def apply_leave(payload: ApplyLeaveRequest, db: Session):
 
     employee = validate_employee(payload.emp_id, db)
@@ -114,9 +110,7 @@ def apply_leave(payload: ApplyLeaveRequest, db: Session):
     }
 
 
-# =================================================
-# APPROVE / REJECT
-# =================================================
+
 def approve_or_reject_leave(payload: LeaveApprovalRequest, db: Session):
 
     leave = db.query(LeaveRequest).filter(
@@ -158,9 +152,7 @@ def approve_or_reject_leave(payload: LeaveApprovalRequest, db: Session):
     }
 
 
-# =================================================
-# HISTORY / PENDING / MONTHLY (UNCHANGED, SAFE)
-# =================================================
+
 def leave_history(emp_id: int, limit: int, offset: int, db: Session):
     validate_employee(emp_id, db)
     return db.execute(

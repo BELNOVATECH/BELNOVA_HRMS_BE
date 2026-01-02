@@ -18,9 +18,7 @@ router = APIRouter(
     tags=["Attendance"]
 )
 
-# -----------------------------
-# LOGIN
-# -----------------------------
+
 @router.post("/login")
 def login_route(
     req: AttendanceLoginRequest,
@@ -28,9 +26,7 @@ def login_route(
 ):
     return login_controller(req, db)
 
-# -----------------------------
-# LOGOUT
-# -----------------------------
+
 @router.post("/logout/{emp_id}")
 def logout_route(
     emp_id: int,
@@ -38,9 +34,7 @@ def logout_route(
 ):
     return logout_controller(emp_id, db)
 
-# -----------------------------
-# GET ATTENDANCE (FILTER / EXPORT)
-# -----------------------------
+
 @router.get("/", response_model=List[AttendanceRead])
 def get_attendance(
     emp_id: Optional[int] = Query(None),
@@ -67,9 +61,7 @@ def get_attendance(
         export=False
     )
 
-# -----------------------------
-# DELETE ATTENDANCE BY ID
-# -----------------------------
+
 @router.delete("/delete/{attendance_id}")
 def delete_attendance(
     attendance_id: int,
