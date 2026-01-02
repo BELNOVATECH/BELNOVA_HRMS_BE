@@ -5,6 +5,7 @@ from datetime import datetime, date
 import calendar
 
 from models.leave_model import LeaveRequest
+from models.leave_request_cc_model import LeaveRequestCC
 from services.employee_validator import validate_employee
 from schemas.leave_schema import (
     ApplyLeaveRequest,
@@ -50,6 +51,7 @@ def apply_leave(payload: ApplyLeaveRequest, db: Session):
 
     employee = validate_employee(payload.emp_id, db)
 
+    # 🔍 Check overlapping leave
     exists = db.query(LeaveRequest).filter(
         LeaveRequest.emp_id == payload.emp_id,
         LeaveRequest.is_active == True,
@@ -60,6 +62,7 @@ def apply_leave(payload: ApplyLeaveRequest, db: Session):
     if exists:
         raise HTTPException(400, "Leave already applied for selected dates")
 
+    # 🔍 Validate leave type
     leave_type = db.execute(
         text("""
             SELECT leave_type
@@ -79,6 +82,7 @@ def apply_leave(payload: ApplyLeaveRequest, db: Session):
         payload.to_date_session_id
     )
 
+    
     leave = LeaveRequest(
         emp_id=payload.emp_id,
         leavetype_id=payload.leavetype_id,
@@ -101,10 +105,25 @@ def apply_leave(payload: ApplyLeaveRequest, db: Session):
     db.commit()
     db.refresh(leave)
 
+    
+    if payload.cc:
+        for cc_emp_id in payload.cc:
+            cc_entry = LeaveRequestCC(
+                leave_request_id=leave.id,
+                cc_to_id=cc_emp_id,
+                created_by=employee.user_id,
+                created_date=datetime.utcnow(),
+                is_active=True
+            )
+            db.add(cc_entry)
+
+        db.commit()
+
+    
     return {
         "id": leave.id,
         "leavetype_id": leave.leavetype_id,
-        "leave_type": leave_type,   # ✅ ALWAYS MATCHES
+        "leave_type": leave_type,
         "status_id": leave.status_id,
         "created_date": leave.created_date
     }
@@ -161,6 +180,7 @@ def leave_history(emp_id: int, limit: int, offset: int, db: Session):
     ).mappings().all()
 
 
+
 def pending_leaves(emp_id: int, limit: int, offset: int, db: Session):
     validate_employee(emp_id, db)
     return db.execute(
@@ -176,6 +196,7 @@ def pending_leaves(emp_id: int, limit: int, offset: int, db: Session):
             "status": STATUS_PENDING
         }
     ).mappings().all()
+
 
 
 def monthly_leave_summary_service(emp_id: int, year: int, month: int, db: Session):
