@@ -1,36 +1,50 @@
 from sqlalchemy import (
-    Column, Integer, Float, DateTime, Boolean, ForeignKey
+    Column, BigInteger, Integer, Numeric, String,
+    Boolean, DateTime, ForeignKey
 )
-from core.database import Base
 from datetime import datetime
-
+from core.database import Base
 
 class Payroll(Base):
+    __tablename__ = "payslips"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(BigInteger, primary_key=True, index=True)
 
-    emp_id = Column(
-        Integer,
-        ForeignKey("employee_registration.id", ondelete="CASCADE"),
-        nullable=False
-    )
+    emp_id = Column(BigInteger, ForeignKey("employee_registration.id"))
+    month_id = Column(Integer, nullable=False)
+    year_id = Column(Integer, ForeignKey("master_year.id"), nullable=False)
 
-    department_id = Column(Integer, nullable=False)
+    total_days = Column(Integer, nullable=False)
+    paid_days = Column(Integer, nullable=False)
+    lop_days = Column(Integer, nullable=False)
 
-    # Earnings
-    basic_salary = Column(Float, nullable=False)
-    hra = Column(Float, nullable=False)
-    bonus = Column(Float, default=0)
+    basic = Column(Numeric(10, 2), nullable=False)
+    conveyance = Column(Numeric(10, 2), nullable=False, default=0)
+    hra = Column(Numeric(10, 2), nullable=False)
+    medical_allowance = Column(Numeric(10, 2), nullable=False, default=0)
+    special_allowance = Column(Numeric(10, 2), nullable=False)
+    arrears = Column(Numeric(10, 2), nullable=False, default=0)
 
-    # Deductions
-    pf = Column(Float, default=0)
-    esi = Column(Float, default=0)
-    other_deductions = Column(Float, default=0)
+    total_earnings = Column(Numeric(10, 2), nullable=False)
 
-    # Net
-    net_salary = Column(Float, nullable=False)
+    pf = Column(Numeric(10, 2), nullable=False)
+    esic = Column(Numeric(10, 2), nullable=False, default=0)
+    pt = Column(Numeric(10, 2), nullable=False, default=0)
+    tds = Column(Numeric(10, 2), nullable=False, default=0)
+    other_deductions = Column(Numeric(10, 2), nullable=False, default=0)
+
+    total_deductions = Column(Numeric(10, 2), nullable=False)
+    gross_earning = Column(Numeric(10, 2), nullable=False)
+    deduction = Column(Numeric(10, 2), nullable=False)
+
+    net_pay = Column(Numeric(10, 2), nullable=False)
+    net_pay_in_words = Column(String(500))
+
+    created_by = Column(BigInteger)
+    created_date = Column(DateTime, default=datetime.utcnow)
+    modified_by = Column(BigInteger)
+    modified_date = Column(DateTime)
 
     is_active = Column(Boolean, default=True)
-
-    created_by = Column(Integer, nullable=True)
-    created_date = Column(DateTime, default=datetime.utcnow)
+    period = Column(String(50))
+    perc_cal_id = Column(Integer)
