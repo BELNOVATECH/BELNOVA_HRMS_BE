@@ -3,18 +3,25 @@ from datetime import date, datetime
 from typing import Optional, List
 
 
-
+# -------------------------------------------------
+# APPLY LEAVE (REQUEST)
+# -------------------------------------------------
 class ApplyLeaveRequest(BaseModel):
     emp_id: int
     leavetype_id: int
     start_date: date
     end_date: date
-    reason: Optional[str]
-    from_date_session_id: str  # "1" or "2"
-    to_date_session_id: str    # "1" or "2"
-    mobile: Optional[str]
-    upload_file: Optional[str]
-    reporting_manager_id: Optional[int]
+    reason: Optional[str] = None
+
+    from_date_session_id: str   # "1" = Morning, "2" = Afternoon
+    to_date_session_id: str     # "1" = Morning, "2" = Afternoon
+
+    mobile: Optional[str] = None
+    upload_file: Optional[str] = None
+    reporting_manager_id: Optional[int] = None
+
+    # 🔥 NEW FIELD – CC EMPLOYEES
+    cc: Optional[List[int]] = []   # employee_registration.id list
 
 
 class ApplyLeaveResponse(BaseModel):
@@ -25,11 +32,12 @@ class ApplyLeaveResponse(BaseModel):
     created_date: datetime
 
 
+
 class LeaveApprovalRequest(BaseModel):
     leave_id: int
-    action: str        # approve | reject
+    action: str                  # approve | reject
     approver_id: int
-    remarks: Optional[str]
+    remarks: Optional[str] = None
 
 
 class LeaveApprovalResponse(BaseModel):
@@ -39,6 +47,7 @@ class LeaveApprovalResponse(BaseModel):
     approver_id: int
     remarks: Optional[str]
     modified_date: datetime
+
 
 
 class LeaveHistoryResponse(BaseModel):
@@ -52,6 +61,7 @@ class LeaveHistoryResponse(BaseModel):
     status_id: int
     status_name: str
     reason: Optional[str]
+
 
 
 class MonthlyLeaveItem(BaseModel):
