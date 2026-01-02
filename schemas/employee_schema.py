@@ -3,6 +3,7 @@ from datetime import date, datetime
 from typing import Optional
 
 
+
 class EmployeeBase(BaseModel):
     first_name: str
     last_name: Optional[str] = None
@@ -54,14 +55,32 @@ class EmployeeBase(BaseModel):
     is_active: Optional[bool] = True
 
 
+
 class EmployeeCreate(EmployeeBase):
     pass
+
 
 
 class EmployeeRead(EmployeeBase):
     id: int
     created_date: Optional[datetime]
     modified_date: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+
+
+
+class EmployeeStatusUpdate(BaseModel):
+    is_active: bool
+
+
+
+class EmployeeStatusResponse(BaseModel):
+    emp_id: int
+    first_name: str
+    last_name: Optional[str] = None
+    is_active: bool
 
     class Config:
         from_attributes = True

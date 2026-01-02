@@ -8,9 +8,7 @@ router = APIRouter(prefix="/upload", tags=["Resume Upload"])
 UPLOAD_DIR = "uploads/resumes"
 
 
-# ---------------------------------------------------
-# POST → Upload Resume
-# ---------------------------------------------------
+
 @router.post("/resume")
 def upload_resume(file: UploadFile = File(...)):
     filename = save_resume_locally(file)
@@ -21,9 +19,7 @@ def upload_resume(file: UploadFile = File(...)):
     }
 
 
-# ---------------------------------------------------
-# GET → Return Resume URL
-# ---------------------------------------------------
+
 @router.get("/resume/{filename}")
 def get_resume(filename: str):
     file_path = os.path.join(UPLOAD_DIR, filename)
@@ -36,9 +32,7 @@ def get_resume(filename: str):
     }
 
 
-# ---------------------------------------------------
-# GET → View/Download Resume File Directly
-# ---------------------------------------------------
+
 @router.get("/resume/view/{filename}")
 def view_resume(filename: str):
     file_path = os.path.join(UPLOAD_DIR, filename)

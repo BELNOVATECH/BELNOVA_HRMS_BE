@@ -3,12 +3,10 @@ from fastapi import HTTPException
 from models.job_title import JobOpening
 
 
-# 🔹 GET ALL JOB OPENINGS
 def get_all_job_openings_service(db: Session):
     return db.query(JobOpening).all()
 
 
-# 🔹 CREATE JOB OPENING
 def create_job_title_service(data, db: Session):
     job = JobOpening(
         designation_id=data.designation_id,
@@ -22,7 +20,6 @@ def create_job_title_service(data, db: Session):
     return job
 
 
-# 🔹 UPDATE ONLY ACTIVE / INACTIVE STATUS
 def update_job_opening_is_active_service(
     job_id: int,
     is_active: bool,
@@ -39,7 +36,6 @@ def update_job_opening_is_active_service(
     return job
 
 
-# 🔹 UPDATE FULL JOB DETAILS (NO DUPLICATE CHECK)
 def update_job_opening_service(
     job_id: int,
     data,

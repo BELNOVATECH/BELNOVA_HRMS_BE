@@ -5,9 +5,7 @@ from utils.date_utils import convert_date
 import re
 
 
-# =================================================
-# CREATE
-# =================================================
+
 class CandidateAppliedCreate(BaseModel):
     candidate_name: str
     designation_id: int
@@ -32,9 +30,7 @@ class CandidateAppliedCreate(BaseModel):
         return value
 
 
-# =================================================
-# READ
-# =================================================
+
 class CandidateAppliedRead(BaseModel):
     id: int
     candidate_name: str
@@ -52,9 +48,7 @@ class CandidateAppliedRead(BaseModel):
         from_attributes = True
 
 
-# =================================================
-# UPDATE
-# =================================================
+
 class CandidateAppliedUpdate(BaseModel):
     candidate_name: Optional[str] = None
     designation_id: Optional[int] = None

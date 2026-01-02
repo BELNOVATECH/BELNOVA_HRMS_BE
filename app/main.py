@@ -2,14 +2,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-# -----------------------------
-# Database
-# -----------------------------
+
 from core.database import Base, engine
 
-# -----------------------------
-# Routers
-# -----------------------------
+
 import models.department
 import models.designation_model
 
@@ -27,21 +23,16 @@ from route.holiday_route import holiday_router
 from route.designation_route import designation_router
 from route.attendance_route import router as attendance_router
 from route.payroll_route import router as payroll_router
-# 🔥 VERY IMPORTANT
 
 
 
-# -----------------------------
-# FastAPI App
-# -----------------------------
+
 app = FastAPI(
     title="HRMS Backend API",
     version="1.0"
 )
 
-# -----------------------------
-# CORS Middleware
-# -----------------------------
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -50,14 +41,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# -----------------------------
-# Static Files
-# -----------------------------
+
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
-# -----------------------------
-# API Routes
-# -----------------------------
+
 app.include_router(auth_router)
 app.include_router(leave_router)
 app.include_router(balance_router)

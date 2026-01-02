@@ -9,7 +9,7 @@ class InterviewSchedule(Base):
     id = Column(Integer, primary_key=True, index=True)
     candidate_id = Column(Integer, nullable=False)
 
-    designation_id = Column(Integer, nullable=False)   # ✅ changed
+    designation_id = Column(Integer, nullable=False)   
     status_id = Column(Integer, nullable=False)
     stage_id = Column(Integer, nullable=False)
 
