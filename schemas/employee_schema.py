@@ -1,7 +1,8 @@
 from pydantic import BaseModel
 from datetime import date, datetime
-from typing import Optional
+from typing import Optional, List
 
+from schemas.employee_family_schema import FamilyMemberCreate
 
 
 class EmployeeBase(BaseModel):
@@ -55,10 +56,8 @@ class EmployeeBase(BaseModel):
     is_active: Optional[bool] = True
 
 
-
 class EmployeeCreate(EmployeeBase):
-    pass
-
+    family_member: Optional[List[FamilyMemberCreate]] = []
 
 
 class EmployeeRead(EmployeeBase):
@@ -70,10 +69,8 @@ class EmployeeRead(EmployeeBase):
         from_attributes = True
 
 
-
 class EmployeeStatusUpdate(BaseModel):
     is_active: bool
-
 
 
 class EmployeeStatusResponse(BaseModel):
@@ -81,6 +78,3 @@ class EmployeeStatusResponse(BaseModel):
     first_name: str
     last_name: Optional[str] = None
     is_active: bool
-
-    class Config:
-        from_attributes = True

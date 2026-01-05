@@ -5,6 +5,7 @@ from sqlalchemy import (
 )
 from core.database import Base
 from datetime import datetime
+from sqlalchemy.orm import relationship
 
 
 class Employee(Base):
@@ -63,3 +64,9 @@ class Employee(Base):
 
     created_date = Column(DateTime, default=datetime.utcnow)
     modified_date = Column(DateTime)
+
+    family_member = relationship(
+        "EmployeeFamilyMember",
+        backref="employee",
+        cascade="all, delete-orphan"
+    )
