@@ -67,7 +67,6 @@ def get_payroll_preview(
 
     lop_days = sum(Decimal(str(l[0])) for l in approved_leaves)
     paid_days = Decimal(total_days) - lop_days
-
     if paid_days < 0:
         paid_days = Decimal("0")
 
@@ -90,7 +89,7 @@ def get_payroll_preview(
     gross_after_lop = gross_salary - lop_amount
 
     # =========================
-    # Deductions (pro-rated)
+    # Deductions
     # =========================
     basic_after_lop = basic / Decimal(total_days) * paid_days
 
@@ -118,12 +117,21 @@ def get_payroll_preview(
             "name": f"{emp.first_name} {emp.last_name}",
             "emp_code": emp.emp_code,
             "designation_id": emp.designation_id,
+
+            # ✅ FIXED — REAL DESIGNATION NAME
+            "designation_name": (
+                emp.designation.designation_name
+                if hasattr(emp, "designation") and emp.designation
+                else None
+            ),
+
             "join_date": emp.join_date,
             "bank_account_no": emp.bank_ac_no,
             "ifsc_code": emp.ifsc_code,
             "uan": emp.uan,
             "pan": emp.pan
         },
+
         "period": f"{month}/{year}",
 
         "ctc": {
@@ -159,13 +167,4 @@ def get_payroll_preview(
 
         "net_salary": round(float(net_salary), 2)
     }
-
-
-
-
-
-
-
-
-
 

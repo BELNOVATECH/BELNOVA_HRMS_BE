@@ -1,5 +1,6 @@
+
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from core.database import get_db
 from models.employee_model import Employee
@@ -10,9 +11,8 @@ router = APIRouter(
     tags=["Payroll"]
 )
 
-
 @router.get("/calculate/{emp_id}")
-def calculate_payroll(
+def calculate_payroll_by_emp_id(
     emp_id: int,
     month: int | None = Query(None, ge=1, le=12),
     year: int | None = Query(None),
@@ -36,10 +36,12 @@ def calculate_all_payrolls(
         results = []
         for emp in employees:
             results.append(
-                get_payroll_preview(emp.id, db, month, year)
+                get_payroll_preview(emp.id, db, month, year)  # ✅ FIX
             )
 
         return results
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
