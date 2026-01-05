@@ -57,7 +57,7 @@ class EmployeeBase(BaseModel):
 
 
 class EmployeeCreate(EmployeeBase):
-    family_member: Optional[List[FamilyMemberCreate]] = []
+    family_member: Optional[FamilyMemberCreate] = None
 
 
 class EmployeeRead(EmployeeBase):

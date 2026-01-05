@@ -10,7 +10,7 @@ from schemas.employee_schema import EmployeeCreate
 
 def create_employee_service(payload: EmployeeCreate, db: Session) -> Employee:
     """
-    Creates an employee and related family members in a single transaction
+    Create employee and (optional) single family member
     """
 
     # -------------------------------------------------
@@ -33,7 +33,7 @@ def create_employee_service(payload: EmployeeCreate, db: Session) -> Employee:
         # CREATE EMPLOYEE
         # -------------------------------------------------
         employee_data = payload.dict(
-            exclude={"family_member"},   # ✅ CORRECT KEY
+            exclude={"family_member"},
             exclude_none=True
         )
 
@@ -43,19 +43,31 @@ def create_employee_service(payload: EmployeeCreate, db: Session) -> Employee:
         db.refresh(employee)
 
         # -------------------------------------------------
-        # CREATE FAMILY MEMBERS
+        # CREATE FAMILY MEMBER (ONLY ONE)
         # -------------------------------------------------
-        for member in payload.family_member or []:
+        if payload.family_member:
             family = EmployeeFamilyMember(
                 emp_id=employee.id,
+                relation_id=payload.family_member.relation_id,
+                first_name=payload.family_member.first_name,
+                last_name=payload.family_member.last_name,
+                date_of_birth=payload.family_member.date_of_birth,
+                occupation_id=payload.family_member.occupation_id,
+                phone=payload.family_member.phone,
+                email=payload.family_member.email,
+                present_address=payload.family_member.present_address,
+                permanent_address=payload.family_member.permanent_address,
+                bank_account=payload.family_member.bank_account,
+                ifsc_code=payload.family_member.ifsc_code,
+                pan=payload.family_member.pan,
+                aadhar=payload.family_member.aadhar,
                 created_by=payload.created_by,
                 created_date=datetime.utcnow(),
-                is_active=True,
-                **member.dict()
+                is_active=True
             )
             db.add(family)
+            db.commit()
 
-        db.commit()
         return employee
 
     except IntegrityError as e:
@@ -68,11 +80,7 @@ def create_employee_service(payload: EmployeeCreate, db: Session) -> Employee:
 
 
 def get_employees_service(db: Session):
-    return (
-        db.query(Employee)
-        .order_by(Employee.id.desc())
-        .all()
-    )
+    return db.query(Employee).order_by(Employee.id.desc()).all()
 
 
 def update_employee_status_service(
@@ -81,11 +89,7 @@ def update_employee_status_service(
     db: Session
 ) -> Employee:
 
-    employee = (
-        db.query(Employee)
-        .filter(Employee.id == emp_id)
-        .first()
-    )
+    employee = db.query(Employee).filter(Employee.id == emp_id).first()
 
     if not employee:
         raise HTTPException(
