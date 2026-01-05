@@ -18,17 +18,14 @@ from services.employee_service import (
 router = APIRouter(prefix="/employees", tags=["Employees"])
 
 
-
 @router.post("/", response_model=EmployeeRead)
 def create_employee(payload: EmployeeCreate, db: Session = Depends(get_db)):
     return create_employee_service(payload, db)
 
 
-
 @router.get("/", response_model=list[EmployeeRead])
 def get_employees(db: Session = Depends(get_db)):
     return get_employees_service(db)
-
 
 
 @router.put("/{emp_id}/status", response_model=EmployeeStatusResponse)
