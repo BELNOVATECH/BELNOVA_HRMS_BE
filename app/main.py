@@ -1,14 +1,18 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-
 from core.database import Base, engine
 
-
+# -----------------------------
+# IMPORT MODELS (IMPORTANT)
+# -----------------------------
 import models.department
 import models.designation_model
 
+# -----------------------------
+# IMPORT ROUTERS
+# -----------------------------
 from route.auth_route import router as auth_router
 from route.leave_route import router as leave_router
 from route.leave_balance_route import router as balance_router
@@ -24,26 +28,43 @@ from route.designation_route import designation_router
 from route.payroll_route import router as payroll_router
 
 
-
-
+# -----------------------------
+# FASTAPI APP
+# -----------------------------
 app = FastAPI(
     title="HRMS Backend API",
     version="1.0"
 )
 
+# -----------------------------
+# ✅ DYNAMIC CORS (WORKS FOR ALL DOMAINS)
+# -----------------------------
+class DynamicCORSMiddleware(CORSMiddleware):
+    async def simple_response(self, request: Request, call_next):
+        response = await call_next(request)
+        origin = request.headers.get("origin")
+        if origin:
+            response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+        return response
+
 
 app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    DynamicCORSMiddleware,
+    allow_origins=["*"],          # placeholder (required)
+    allow_credentials=True,       # ✅ now valid
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-
+# -----------------------------
+# STATIC FILES (UPLOADS)
+# -----------------------------
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
-
+# -----------------------------
+# ROUTERS
+# -----------------------------
 app.include_router(auth_router)
 app.include_router(leave_router)
 app.include_router(balance_router)
@@ -59,7 +80,6 @@ app.include_router(
 app.include_router(employee_router)
 app.include_router(upload_router)
 app.include_router(department_route)
-# app.include_router(job_route)
 
 app.include_router(
     interview_schedule_router,
@@ -73,22 +93,20 @@ app.include_router(
     tags=["Interview Stage"]
 )
 
-# Holiday
 app.include_router(
     holiday_router,
     prefix="/holidays",
     tags=["Holiday Calendar"]
 )
 
-
-# Attendance
 app.include_router(
     job_route,
     prefix="/job-openings",
     tags=["Job Openings"]
 )
+
 # -----------------------------
-# Root Endpoint
+# ROOT
 # -----------------------------
 @app.get("/")
 def root():
