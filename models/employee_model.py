@@ -6,6 +6,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 from core.database import Base
 from datetime import datetime
+from sqlalchemy.orm import relationship
 
 
 class Employee(Base):
@@ -63,5 +64,4 @@ class Employee(Base):
     is_active = Column(Boolean, default=True)
     created_date = Column(DateTime, default=datetime.utcnow)
     modified_date = Column(DateTime)
-
 

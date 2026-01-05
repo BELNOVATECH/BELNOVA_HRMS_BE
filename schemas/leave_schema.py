@@ -61,6 +61,8 @@ class LeaveHistoryResponse(BaseModel):
     status_id: int
     status_name: str
     reason: Optional[str]
+    upload_file: Optional[str] = None
+
 
 
 
