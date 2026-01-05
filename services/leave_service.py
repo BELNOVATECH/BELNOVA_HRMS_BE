@@ -1,49 +1,45 @@
-import os
-import calendar
-from datetime import datetime, date
-
-from fastapi import UploadFile, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import text
+from fastapi import HTTPException
+from datetime import datetime, date
+import calendar
 
 from models.leave_model import LeaveRequest
 from models.leave_request_cc_model import LeaveRequestCC
 from services.employee_validator import validate_employee
 from schemas.leave_schema import (
+    ApplyLeaveRequest,
     LeaveApprovalRequest,
     MonthlyLeaveItem,
     MonthlyLeaveSummaryResponse
 )
-
-UPLOAD_DIR = "uploads/leave_files"
-MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
-
-os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 STATUS_APPROVED = 10
 STATUS_PENDING = 11
 STATUS_REJECTED = 3
 
 
-# -------------------------------------------------
-# CALCULATE TOTAL DAYS
-# -------------------------------------------------
+
 def calculate_total_days(
     start_date: date,
     end_date: date,
     from_session_id: str,
     to_session_id: str
 ) -> float:
+
     from_sess = int(from_session_id)
     to_sess = int(to_session_id)
 
     if start_date == end_date:
-        return 1.0 if from_sess == 1 and to_sess == 2 else 0.5
+        if from_sess == 1 and to_sess == 2:
+            return 1.0
+        return 0.5
 
     days = (end_date - start_date).days + 1
 
     if from_sess == 2:
         days -= 0.5
+
     if to_sess == 1:
         days -= 0.5
 
@@ -51,83 +47,56 @@ def calculate_total_days(
 
 
 
-def apply_leave(
-    emp_id: int,
-    leavetype_id: int,
-    start_date: str,
-    end_date: str,
-    from_date_session_id: str,
-    to_date_session_id: str,
-    reason: str,
-    mobile: str,
-    reporting_manager_id: int,
-    cc: str,
-    upload_file: UploadFile,
-    db: Session
-):
-    employee = validate_employee(emp_id, db)
+def apply_leave(payload: ApplyLeaveRequest, db: Session):
 
-    start_date = date.fromisoformat(start_date)
-    end_date = date.fromisoformat(end_date)
+    employee = validate_employee(payload.emp_id, db)
 
+    # 🔍 Check overlapping leave
     exists = db.query(LeaveRequest).filter(
-        LeaveRequest.emp_id == emp_id,
+        LeaveRequest.emp_id == payload.emp_id,
         LeaveRequest.is_active == True,
-        LeaveRequest.start_date <= end_date,
-        LeaveRequest.end_date >= start_date
+        LeaveRequest.start_date <= payload.end_date,
+        LeaveRequest.end_date >= payload.start_date
     ).first()
 
     if exists:
         raise HTTPException(400, "Leave already applied for selected dates")
 
+    # 🔍 Validate leave type
     leave_type = db.execute(
         text("""
             SELECT leave_type
             FROM master_leavetype
             WHERE id = :id AND is_active = true
         """),
-        {"id": leavetype_id}
+        {"id": payload.leavetype_id}
     ).scalar()
 
     if not leave_type:
         raise HTTPException(400, "Invalid leave type")
 
     total_days = calculate_total_days(
-        start_date, end_date, from_date_session_id, to_date_session_id
+        payload.start_date,
+        payload.end_date,
+        payload.from_date_session_id,
+        payload.to_date_session_id
     )
 
-    file_path = None
-    if upload_file:
-        file_bytes = upload_file.file.read()
-
-        if len(file_bytes) > MAX_FILE_SIZE:
-            raise HTTPException(400, "File size must be <= 10 MB")
-
-        safe_name = upload_file.filename.replace(" ", "_")
-        filename = f"{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_emp{emp_id}_{safe_name}"
-        file_path = os.path.join(UPLOAD_DIR, filename)
-
-        try:
-            with open(file_path, "wb") as f:
-                f.write(file_bytes)
-        except Exception as e:
-            print("🔥 FILE SAVE ERROR:", e)
-            raise HTTPException(500, "Failed to save uploaded file")
-
+    
     leave = LeaveRequest(
-        emp_id=emp_id,
-        leavetype_id=leavetype_id,
-        start_date=start_date,
-        end_date=end_date,
+        emp_id=payload.emp_id,
+        leavetype_id=payload.leavetype_id,
+        start_date=payload.start_date,
+        end_date=payload.end_date,
         total_days=total_days,
-        reason=reason,
-        from_date_session_id=from_date_session_id,
-        to_date_session_id=to_date_session_id,
-        mobile=mobile,
-        reporting_manager_id=reporting_manager_id,
-        upload_file=file_path,
+        reason=payload.reason,
+        from_date_session_id=payload.from_date_session_id,
+        to_date_session_id=payload.to_date_session_id,
+        mobile=payload.mobile,
+        upload_file=payload.upload_file,
+        reporting_manager_id=payload.reporting_manager_id,
         status_id=STATUS_PENDING,
-        created_by=employee.user_id,
+        created_by=employee.id,
         created_date=datetime.utcnow(),
         is_active=True
     )
@@ -136,29 +105,33 @@ def apply_leave(
     db.commit()
     db.refresh(leave)
 
-    if cc:
-        for cc_id in map(int, cc.split(",")):
-            db.add(
-                LeaveRequestCC(
-                    leave_request_id=leave.id,
-                    cc_to_id=cc_id,
-                    created_by=employee.user_id,
-                    created_date=datetime.utcnow(),
-                    is_active=True
-                )
+    
+    if payload.cc:
+        for cc_emp_id in payload.cc:
+            cc_entry = LeaveRequestCC(
+                leave_request_id=leave.id,
+                cc_to_id=cc_emp_id,
+                created_by=employee.id,
+                created_date=datetime.utcnow(),
+                is_active=True
             )
+            db.add(cc_entry)
+
         db.commit()
 
+    
     return {
         "id": leave.id,
-        "status_id": leave.status_id,
+        "leavetype_id": leave.leavetype_id,
         "leave_type": leave_type,
-        "upload_file": leave.upload_file
+        "status_id": leave.status_id,
+        "created_date": leave.created_date
     }
-# -------------------------------------------------
-# APPROVE / REJECT
-# -------------------------------------------------
+
+
+
 def approve_or_reject_leave(payload: LeaveApprovalRequest, db: Session):
+
     leave = db.query(LeaveRequest).filter(
         LeaveRequest.id == payload.leave_id,
         LeaveRequest.is_active == True
@@ -198,15 +171,14 @@ def approve_or_reject_leave(payload: LeaveApprovalRequest, db: Session):
     }
 
 
-# -------------------------------------------------
-# HISTORY / PENDING / MONTHLY SUMMARY (UNCHANGED)
-# -------------------------------------------------
+
 def leave_history(emp_id: int, limit: int, offset: int, db: Session):
     validate_employee(emp_id, db)
     return db.execute(
         text("SELECT * FROM fn_leave_request_get_list(:emp_id, :limit, :offset)"),
         {"emp_id": emp_id, "limit": limit, "offset": offset}
     ).mappings().all()
+
 
 
 def pending_leaves(emp_id: int, limit: int, offset: int, db: Session):
@@ -217,11 +189,18 @@ def pending_leaves(emp_id: int, limit: int, offset: int, db: Session):
             FROM fn_leave_request_get_list(:emp_id, :limit, :offset)
             WHERE status_id = :status
         """),
-        {"emp_id": emp_id, "limit": limit, "offset": offset, "status": STATUS_PENDING}
+        {
+            "emp_id": emp_id,
+            "limit": limit,
+            "offset": offset,
+            "status": STATUS_PENDING
+        }
     ).mappings().all()
 
 
+
 def monthly_leave_summary_service(emp_id: int, year: int, month: int, db: Session):
+
     validate_employee(emp_id, db)
 
     start = date(year, month, 1)
