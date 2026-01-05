@@ -50,9 +50,7 @@ def calculate_total_days(
     return float(days)
 
 
-# -------------------------------------------------
-# APPLY LEAVE (MULTIPART + FILE)
-# -------------------------------------------------
+
 def apply_leave(
     emp_id: int,
     leavetype_id: int,
@@ -72,7 +70,6 @@ def apply_leave(
     start_date = date.fromisoformat(start_date)
     end_date = date.fromisoformat(end_date)
 
-    # 🔍 Overlapping leave check
     exists = db.query(LeaveRequest).filter(
         LeaveRequest.emp_id == emp_id,
         LeaveRequest.is_active == True,
@@ -83,7 +80,6 @@ def apply_leave(
     if exists:
         raise HTTPException(400, "Leave already applied for selected dates")
 
-    # 🔍 Validate leave type
     leave_type = db.execute(
         text("""
             SELECT leave_type
@@ -97,15 +93,9 @@ def apply_leave(
         raise HTTPException(400, "Invalid leave type")
 
     total_days = calculate_total_days(
-        start_date,
-        end_date,
-        from_date_session_id,
-        to_date_session_id
+        start_date, end_date, from_date_session_id, to_date_session_id
     )
 
-    # -------------------------------------------------
-    # SAVE FILE LOCALLY
-    # -------------------------------------------------
     file_path = None
     if upload_file:
         file_bytes = upload_file.file.read()
@@ -113,16 +103,17 @@ def apply_leave(
         if len(file_bytes) > MAX_FILE_SIZE:
             raise HTTPException(400, "File size must be <= 10 MB")
 
-        safe_filename = upload_file.filename.replace(" ", "_")
-        filename = f"{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_emp{emp_id}_{safe_filename}"
+        safe_name = upload_file.filename.replace(" ", "_")
+        filename = f"{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_emp{emp_id}_{safe_name}"
         file_path = os.path.join(UPLOAD_DIR, filename)
 
-        with open(file_path, "wb") as f:
-            f.write(file_bytes)
+        try:
+            with open(file_path, "wb") as f:
+                f.write(file_bytes)
+        except Exception as e:
+            print("🔥 FILE SAVE ERROR:", e)
+            raise HTTPException(500, "Failed to save uploaded file")
 
-    # -------------------------------------------------
-    # CREATE LEAVE REQUEST
-    # -------------------------------------------------
     leave = LeaveRequest(
         emp_id=emp_id,
         leavetype_id=leavetype_id,
@@ -134,7 +125,7 @@ def apply_leave(
         to_date_session_id=to_date_session_id,
         mobile=mobile,
         reporting_manager_id=reporting_manager_id,
-        upload_file=file_path,          # ✅ PATH STORED
+        upload_file=file_path,
         status_id=STATUS_PENDING,
         created_by=employee.user_id,
         created_date=datetime.utcnow(),
@@ -145,9 +136,6 @@ def apply_leave(
     db.commit()
     db.refresh(leave)
 
-    # -------------------------------------------------
-    # CC EMPLOYEES
-    # -------------------------------------------------
     if cc:
         for cc_id in map(int, cc.split(",")):
             db.add(
@@ -163,14 +151,10 @@ def apply_leave(
 
     return {
         "id": leave.id,
-        "leavetype_id": leave.leavetype_id,
-        "leave_type": leave_type,
         "status_id": leave.status_id,
-        "created_date": leave.created_date,
+        "leave_type": leave_type,
         "upload_file": leave.upload_file
     }
-
-
 # -------------------------------------------------
 # APPROVE / REJECT
 # -------------------------------------------------
