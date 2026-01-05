@@ -19,7 +19,6 @@ class EmployeeFamilyMember(Base):
     )
 
     relation_id = Column(Integer, nullable=False)
-
     first_name = Column(String(150), nullable=False)
     last_name = Column(String(150))
 
