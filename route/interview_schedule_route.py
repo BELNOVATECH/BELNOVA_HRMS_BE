@@ -54,9 +54,9 @@ def update_interview_schedule(
     return update_interview_schedule_controller(db, interview_id, payload)
 
 
-@interview_schedule_router.delete("/{interview_id}")
-def delete_interview_schedule(
-    interview_id: int,
-    db: Session = Depends(get_db)
-):
-    return delete_interview_schedule_controller(db, interview_id)
+# @interview_schedule_router.delete("/{interview_id}")
+# def delete_interview_schedule(
+#     interview_id: int,
+#     db: Session = Depends(get_db)
+# ):
+#     return delete_interview_schedule_controller(db, interview_id)
