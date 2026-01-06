@@ -46,5 +46,4 @@ class Payroll(Base):
     modified_date = Column(DateTime)
 
     is_active = Column(Boolean, default=True)
-    period = Column(String(50))
     perc_cal_id = Column(Integer)

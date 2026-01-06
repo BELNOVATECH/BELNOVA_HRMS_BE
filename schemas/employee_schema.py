@@ -80,30 +80,40 @@
 #     is_active: bool
 
 
-
 from pydantic import BaseModel
 from datetime import date
 from typing import Optional, List
 
 
-# -------- FAMILY --------
+# ---------- FAMILY ----------
 class FamilyMemberCreate(BaseModel):
     relation_id: int
     first_name: str
     last_name: Optional[str] = None
     date_of_birth: date
     occupation_id: int
+
     phone: Optional[str] = None
     email: Optional[str] = None
+
     present_address: str
     permanent_address: str
+
     bank_account: Optional[str] = None
     ifsc_code: Optional[str] = None
     pan: Optional[str] = None
     aadhar: Optional[str] = None
 
 
-# -------- EMPLOYEE CREATE --------
+class FamilyMemberRead(FamilyMemberCreate):
+    id: int
+    is_active: bool
+
+    class Config:
+        from_attributes = True
+
+
+# ---------- EMPLOYEE ----------
 class EmployeeCreate(BaseModel):
     first_name: str
     last_name: Optional[str] = None
@@ -138,7 +148,6 @@ class EmployeeCreate(BaseModel):
 
     salary: Optional[float] = None
     ctc: Optional[float] = None
-    pay_method_id: Optional[int] = None
 
     bank_id: Optional[int] = None
     bank_ac_no: Optional[str] = None
@@ -152,16 +161,22 @@ class EmployeeCreate(BaseModel):
     created_by: Optional[int] = None
     user_id: Optional[int] = None
 
-    family_member: Optional[FamilyMemberCreate] = None
+    # ✅ mandatory
+    family_member: FamilyMemberCreate
 
     class Config:
         extra = "forbid"
 
 
-# -------- READ --------
-class EmployeeRead(EmployeeCreate):
+class EmployeeRead(BaseModel):
     id: int
+    first_name: str
+    last_name: Optional[str]
+    email: Optional[str]
+    mobile: Optional[str]
     is_active: bool
+
+    family_members: List[FamilyMemberRead] = []
 
     class Config:
         from_attributes = True
