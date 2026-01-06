@@ -170,7 +170,6 @@
 
 
 
-
 from datetime import date
 import calendar
 from decimal import Decimal
