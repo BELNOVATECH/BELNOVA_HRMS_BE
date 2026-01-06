@@ -81,7 +81,6 @@
 
 
 
-
 from sqlalchemy.orm import Session
 from sqlalchemy.inspection import inspect
 from fastapi import HTTPException
@@ -96,7 +95,6 @@ def create_employee_service(payload: EmployeeCreate, db: Session):
 
     payload_data = payload.dict(exclude_none=True)
 
-    # 🔥 Auto-filter using SQLAlchemy model (NO whitelist bugs)
     employee_columns = {
         c.key for c in inspect(Employee).mapper.column_attrs
     }
@@ -111,14 +109,15 @@ def create_employee_service(payload: EmployeeCreate, db: Session):
     db.commit()
     db.refresh(employee)
 
-    if payload.family_member:
-        family = EmployeeFamilyMember(
-            emp_id=employee.id,
-            **payload.family_member.dict(exclude_none=True),
-            created_by=payload.created_by
-        )
-        db.add(family)
-        db.commit()
+    family = EmployeeFamilyMember(
+        emp_id=employee.id,
+        **payload.family_member.dict(exclude_none=True),
+        created_by=payload.created_by
+    )
+
+    db.add(family)
+    db.commit()
+    db.refresh(employee)
 
     return employee
 

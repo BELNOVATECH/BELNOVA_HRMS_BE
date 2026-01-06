@@ -66,9 +66,11 @@
 #     modified_date = Column(DateTime)
 
 
+
+
 from sqlalchemy import (
     Column, Integer, String, Date, DateTime,
-    Boolean, Float, Text, ForeignKey
+    Boolean, Float, Text
 )
 from sqlalchemy.orm import relationship
 from datetime import datetime
@@ -114,7 +116,6 @@ class Employee(Base):
 
     salary = Column(Float)
     ctc = Column(Float)
-    pay_method_id = Column(Integer)   # nullable in DB
 
     bank_id = Column(Integer)
     bank_ac_no = Column(String(100))
@@ -139,3 +140,5 @@ class Employee(Base):
         back_populates="employee",
         cascade="all, delete-orphan"
     )
+
+

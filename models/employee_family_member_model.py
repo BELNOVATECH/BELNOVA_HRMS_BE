@@ -45,6 +45,9 @@
 
 #     is_active = Column(Boolean, default=True)
 
+
+
+
 from sqlalchemy import (
     Column, Integer, String, Date, DateTime,
     Boolean, ForeignKey, Text
@@ -72,7 +75,6 @@ class EmployeeFamilyMember(Base):
     date_of_birth = Column(Date, nullable=False)
     occupation_id = Column(Integer, nullable=False)
 
-    # ✅ OPTIONAL FIELDS (NULLABLE BY DEFAULT)
     phone = Column(String(20))
     email = Column(String(255))
 
