@@ -170,15 +170,22 @@
 
 
 
-from decimal import Decimal
+from datetime import date
 import calendar
+from decimal import Decimal
+from collections import defaultdict
+
 from models.employee_model import Employee
+from models.leave_model import LeaveRequest
 from models.master_perc_cal_id import MasterPercCalId
 
+APPROVED_STATUS_ID = 11
+
+
 def get_payroll_preview(
-    emp: Employee,
-    perc: MasterPercCalId,
-    leave_map: dict,
+    emp: Employee,                      
+    perc: MasterPercCalId,              
+    leave_map: dict,                   
     month: int,
     year: int
 ):
@@ -187,6 +194,7 @@ def get_payroll_preview(
 
     annual_ctc = Decimal(emp.ctc)
     monthly_ctc = annual_ctc / Decimal("12")
+
     total_days = calendar.monthrange(year, month)[1]
 
     lop_days = Decimal(leave_map.get(emp.id, 0))
@@ -194,7 +202,9 @@ def get_payroll_preview(
     if paid_days < 0:
         paid_days = Decimal("0")
 
+    # =========================
     # Earnings
+    # =========================
     basic = monthly_ctc * Decimal(perc.basic_perc) / 100
     hra = monthly_ctc * Decimal(perc.hra_perc) / 100
     medical = monthly_ctc * Decimal(perc.medical_allowance_perc) / 100
@@ -203,10 +213,16 @@ def get_payroll_preview(
 
     gross_salary = basic + hra + medical + special + arrears
 
+    # =========================
+    # LOP
+    # =========================
     per_day_salary = gross_salary / Decimal(total_days)
     lop_amount = per_day_salary * lop_days
     gross_after_lop = gross_salary - lop_amount
 
+    # =========================
+    # Deductions
+    # =========================
     basic_after_lop = basic / Decimal(total_days) * paid_days
 
     pf = basic_after_lop * Decimal(perc.pf_perc) / 100
@@ -220,6 +236,9 @@ def get_payroll_preview(
     if net_salary < 0:
         net_salary = Decimal("0.00")
 
+    # =========================
+    # RESPONSE (UNCHANGED)
+    # =========================
     return {
         "employee": {
             "id": emp.id,
@@ -238,26 +257,32 @@ def get_payroll_preview(
             "pan": emp.pan
         },
         "period": f"{month}/{year}",
+        "ctc": {
+            "annual": float(annual_ctc),
+            "monthly": round(float(monthly_ctc), 2)
+        },
         "attendance": {
             "total_days": total_days,
             "paid_days": float(paid_days),
             "lop_days": float(lop_days)
         },
         "earnings": {
-            "basic": float(basic),
-            "hra": float(hra),
-            "medical": float(medical),
-            "special": float(special),
-            "arrears": float(arrears),
-            "gross_salary": float(gross_salary)
+            "basic": round(float(basic), 2),
+            "hra": round(float(hra), 2),
+            "medical_allowance": round(float(medical), 2),
+            "special_allowance": round(float(special), 2),
+            "arrears": round(float(arrears), 2),
+            "gross_salary": round(float(gross_salary), 2),
+            "lop_amount": round(float(lop_amount), 2),
+            "gross_after_lop": round(float(gross_after_lop), 2)
         },
         "deductions": {
-            "pf": float(pf),
-            "esic": float(esic),
-            "pt": float(pt),
-            "tds": float(tds),
-            "other": float(other_deductions),
-            "total": float(total_deductions)
+            "pf": round(float(pf), 2),
+            "esic": round(float(esic), 2),
+            "pt": round(float(pt), 2),
+            "tds": round(float(tds), 2),
+            "other_deductions": round(float(other_deductions), 2),
+            "total_deductions": round(float(total_deductions), 2)
         },
-        "net_salary": float(net_salary)
+        "net_salary": round(float(net_salary), 2)
     }
