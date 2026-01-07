@@ -117,6 +117,7 @@ from route.attendance_route import router as attendance_router
 from route.payroll_route import router as payroll_router
 from route.employee_rating_route import router as employee_rating_router
 from route.vw_performance_rating_route import router as vw_performance_rating_router
+from route.employee_count_route import router as employee_count_router
 
 app = FastAPI(
     title="HRMS Backend API",
@@ -156,6 +157,7 @@ app.include_router(holiday_router, prefix="/holidays", tags=["Holiday Calendar"]
 app.include_router(job_route, prefix="/job-openings", tags=["Job Openings"])
 app.include_router(employee_rating_router)
 app.include_router(vw_performance_rating_router)
+app.include_router(employee_count_router)
 
 @app.get("/")
 def root():
