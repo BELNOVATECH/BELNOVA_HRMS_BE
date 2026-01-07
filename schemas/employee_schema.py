@@ -174,6 +174,8 @@ class EmployeeRead(BaseModel):
     last_name: Optional[str]
     email: Optional[str]
     mobile: Optional[str]
+    designation_id: Optional[int]
+    designation_name: Optional[str] = None
     is_active: bool
 
     family_members: List[FamilyMemberRead] = []

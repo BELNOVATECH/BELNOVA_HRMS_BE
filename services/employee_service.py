@@ -122,9 +122,17 @@ def create_employee_service(payload: EmployeeCreate, db: Session):
     return employee
 
 
+from sqlalchemy.orm import joinedload
 def get_employees_service(db: Session):
-    return db.query(Employee).order_by(Employee.id.desc()).all()
-
+    return (
+        db.query(Employee)
+        .options(
+            joinedload(Employee.designation),
+            joinedload(Employee.family_members)
+        )
+        .order_by(Employee.id.desc())
+        .all()
+    )
 
 def update_employee_status_service(emp_id: int, is_active: bool, db: Session):
     emp = db.query(Employee).filter(Employee.id == emp_id).first()

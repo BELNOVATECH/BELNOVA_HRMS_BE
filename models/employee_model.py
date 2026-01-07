@@ -70,7 +70,7 @@
 
 from sqlalchemy import (
     Column, Integer, String, Date, DateTime,
-    Boolean, Float, Text
+    Boolean, Float, Text, ForeignKey
 )
 from sqlalchemy.orm import relationship
 from datetime import datetime
@@ -102,7 +102,19 @@ class Employee(Base):
 
     emp_code = Column(String(100), unique=True)
 
-    designation_id = Column(Integer)
+    # 🔥 FIX STARTS HERE 🔥
+    designation_id = Column(
+        Integer,
+        ForeignKey("master_designation.id"),
+        nullable=True
+    )
+
+    designation = relationship(
+        "Designation",
+        lazy="joined"
+    )
+    # 🔥 FIX ENDS HERE 🔥
+
     department_id = Column(Integer)
     employee_type_id = Column(Integer)
     manager_id = Column(Integer)
@@ -141,4 +153,7 @@ class Employee(Base):
         cascade="all, delete-orphan"
     )
 
-
+    # ✅ FLATTEN designation_name FOR RESPONSE
+    @property
+    def designation_name(self):
+        return self.designation.designation_name if self.designation else None
