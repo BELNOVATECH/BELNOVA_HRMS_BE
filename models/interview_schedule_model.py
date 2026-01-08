@@ -9,13 +9,14 @@ class InterviewSchedule(Base):
     id = Column(Integer, primary_key=True, index=True)
     candidate_id = Column(Integer, nullable=False)
 
-    designation_id = Column(Integer, nullable=False)   
+    designation_id = Column(Integer, nullable=False)
     status_id = Column(Integer, nullable=False)
     stage_id = Column(Integer, nullable=False)
 
     interview_date = Column(Date, nullable=False)
-    feedback = Column(String)
-    rating = Column(Integer)
+
+    feedback = Column(String)   # 💬 comments
+    rating = Column(Integer)    # ⭐ stars
 
     created_by = Column(Integer, nullable=False)
     created_date = Column(DateTime, default=datetime.utcnow)
