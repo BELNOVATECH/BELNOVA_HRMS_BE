@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from datetime import datetime
+from sqlalchemy import desc
 
 from models.candidate_applied_model import CandidateApplied
 from models.interview_stage import InterviewStage
@@ -60,9 +61,15 @@ def create_interview_schedule_service(payload, db: Session):
 
 
 def get_interview_schedule_service(db: Session):
-    return db.query(InterviewSchedule).filter(
-        InterviewSchedule.is_active == True
-    ).all()
+    return (
+        db.query(InterviewSchedule)
+        .filter(InterviewSchedule.is_active == True)
+        .order_by(
+            desc(InterviewSchedule.modified_date),
+            desc(InterviewSchedule.created_date)
+        )
+        .all()
+    )
 
 
 # ⭐⭐ THIS API NOW HANDLES rating + feedback
