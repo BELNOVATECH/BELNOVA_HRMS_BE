@@ -7,9 +7,7 @@ from models.interview_stage import InterviewStage
 from models.interview_schedule_model import InterviewSchedule
 
 
-
 def schedule_interview_service(payload, db: Session):
-
     candidate = db.query(CandidateApplied).filter(
         CandidateApplied.id == payload.candidate_id,
         CandidateApplied.is_active == True
@@ -37,7 +35,7 @@ def schedule_interview_service(payload, db: Session):
 
     interview = InterviewSchedule(
         candidate_id=candidate.id,
-        designation_id=payload.designation_id,   # ✅ changed
+        designation_id=payload.designation_id,
         status_id=payload.status_id,
         stage_id=payload.stage_id,
         interview_date=payload.interview_date,
@@ -51,7 +49,6 @@ def schedule_interview_service(payload, db: Session):
     db.refresh(interview)
 
     return interview
-
 
 
 def create_interview_schedule_service(payload, db: Session):
@@ -68,6 +65,7 @@ def get_interview_schedule_service(db: Session):
     ).all()
 
 
+# ⭐⭐ THIS API NOW HANDLES rating + feedback
 def update_interview_schedule_service(db: Session, interview_id: int, payload):
     interview = db.query(InterviewSchedule).filter(
         InterviewSchedule.id == interview_id,
