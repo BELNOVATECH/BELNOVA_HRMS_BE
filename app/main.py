@@ -108,6 +108,7 @@ from route.candidate_applied_route import candidate_router
 from route.employee_route import router as employee_router
 from route.upload_route import router as upload_router
 from route.department_route import router as department_route
+from route.role_route import role_router
 from route.job_route import router as job_route
 from route.interview_schedule_route import interview_schedule_router
 from route.interview_stage_route import router as interview_stage_router
@@ -153,6 +154,8 @@ app.include_router(candidate_router, prefix="/candidates", tags=["Candidates"])
 app.include_router(employee_router)
 app.include_router(upload_router)
 app.include_router(department_route)
+app.include_router(role_router)
+
 
 app.include_router(interview_schedule_router, prefix="/interview-schedule", tags=["Interview Schedule"])
 app.include_router(interview_stage_router, prefix="/interview-stage", tags=["Interview Stage"])
