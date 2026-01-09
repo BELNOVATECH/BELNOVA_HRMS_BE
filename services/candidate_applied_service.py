@@ -1,6 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
+from sqlalchemy import desc
 
 from models.candidate_applied_model import CandidateApplied
 from schemas.candidate_applied_schema import CandidateAppliedCreate
@@ -70,9 +71,13 @@ def update_candidate_applied_service(
     return candidate
 
 
-def get_candidate_applied_service(db: Session):
+def get_candidate_applied_service(db):
     return (
         db.query(CandidateApplied)
         .filter(CandidateApplied.is_active == True)
+        .order_by(
+            desc(CandidateApplied.modified_date),
+            desc(CandidateApplied.created_date)
+        )
         .all()
     )

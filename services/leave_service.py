@@ -136,7 +136,7 @@ def apply_leave(
         reporting_manager_id=reporting_manager_id,
         upload_file=file_path,          # ✅ PATH STORED
         status_id=STATUS_PENDING,
-        created_by=employee.user_id,
+        created_by=employee.id,
         created_date=datetime.utcnow(),
         is_active=True
     )
@@ -154,7 +154,7 @@ def apply_leave(
                 LeaveRequestCC(
                     leave_request_id=leave.id,
                     cc_to_id=cc_id,
-                    created_by=employee.user_id,
+                    created_by=employee.id,
                     created_date=datetime.utcnow(),
                     is_active=True
                 )
