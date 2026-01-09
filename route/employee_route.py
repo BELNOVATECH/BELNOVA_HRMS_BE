@@ -2,19 +2,16 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from core.database import get_db
-from models.employee_model import Employee
-from models.employee_family_member_model import EmployeeFamilyMember
-
 from schemas.employee_schema import (
     EmployeeCreate,
     EmployeeCreateResponse,
     EmployeeStatusUpdate,
     EmployeeStatusResponse
 )
-
 from services.employee_service import (
     create_employee_service,
     get_employees_service,
+    get_employee_by_id_service,
     update_employee_status_service
 )
 
@@ -33,6 +30,17 @@ def get_employees(db: Session = Depends(get_db)):
         })
 
     return result
+
+
+# ✅ NEW: GET EMPLOYEE BY ID
+@router.get("/{emp_id}", response_model=EmployeeCreateResponse)
+def get_employee_by_id(emp_id: int, db: Session = Depends(get_db)):
+    emp = get_employee_by_id_service(emp_id, db)
+
+    return {
+        **emp.__dict__,
+        "family_member": emp.family_members[0] if emp.family_members else None
+    }
 
 
 @router.post("/employee", response_model=EmployeeCreateResponse)

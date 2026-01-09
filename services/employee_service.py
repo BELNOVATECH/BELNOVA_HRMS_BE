@@ -32,6 +32,21 @@ def get_employees_service(db: Session):
     )
 
 
+# ✅ NEW: GET EMPLOYEE BY ID
+def get_employee_by_id_service(emp_id: int, db: Session):
+    emp = (
+        db.query(Employee)
+        .options(joinedload(Employee.family_members))
+        .filter(Employee.id == emp_id)
+        .first()
+    )
+
+    if not emp:
+        raise HTTPException(status_code=404, detail="Employee not found")
+
+    return emp
+
+
 def update_employee_status_service(emp_id: int, is_active: bool, db: Session):
     emp = db.query(Employee).filter(Employee.id == emp_id).first()
     if not emp:
