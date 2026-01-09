@@ -16,9 +16,6 @@ class MasterModuleResponse(MasterModuleCreate):
 
 
 # -------- SCREEN --------
-from pydantic import BaseModel
-from typing import Optional
-
 class MasterScreenResponse(BaseModel):
     id: int
     screen_name: str
@@ -33,12 +30,11 @@ class MasterScreenResponse(BaseModel):
         from_attributes = True
 
 
-
-# -------- PERMISSION --------
+# -------- PERMISSION CREATE --------
 class MasterScreenPermissionCreate(BaseModel):
     role_id: int
     module_id: int
-    screen_id: Optional[int] = None   # ✅ FIX
+    screen_id: Optional[int] = None
 
     can_view: bool = False
     can_edit: bool = False
@@ -47,6 +43,16 @@ class MasterScreenPermissionCreate(BaseModel):
     can_update: bool = False
 
     is_active: Optional[bool] = True
+
+
+# -------- PERMISSION UPDATE (NEW) --------
+class MasterScreenPermissionUpdate(BaseModel):
+    can_view: bool
+    can_edit: bool
+    can_delete: bool
+    can_access: bool
+    can_update: bool
+    is_active: bool
 
 
 class MasterScreenPermissionResponse(MasterScreenPermissionCreate):
