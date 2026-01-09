@@ -1,64 +1,17 @@
-# from fastapi import APIRouter, Depends
-# from sqlalchemy.orm import Session
-# from core.database import get_db
-
-# from schemas.employee_schema import (
-#     EmployeeCreate,
-#     EmployeeRead,
-#     EmployeeStatusUpdate,
-#     EmployeeStatusResponse
-# )
-
-# from services.employee_service import (
-#     create_employee_service,
-#     get_employees_service,
-#     update_employee_status_service
-# )
-
-# router = APIRouter(prefix="/employees", tags=["Employees"])
-
-
-# @router.post("/", response_model=EmployeeRead)
-# def create_employee(payload: EmployeeCreate, db: Session = Depends(get_db)):
-#     return create_employee_service(payload, db)
-
-
-# @router.get("/", response_model=list[EmployeeRead])
-# def get_employees(db: Session = Depends(get_db)):
-#     return get_employees_service(db)
-
-
-# @router.put("/{emp_id}/status", response_model=EmployeeStatusResponse)
-# def update_employee_status(
-#     emp_id: int,
-#     payload: EmployeeStatusUpdate,
-#     db: Session = Depends(get_db)
-# ):
-#     employee = update_employee_status_service(
-#         emp_id=emp_id,
-#         is_active=payload.is_active,
-#         db=db
-#     )
-
-#     return {
-#         "emp_id": employee.id,
-#         "first_name": employee.first_name,
-#         "last_name": employee.last_name,
-#         "is_active": employee.is_active
-#     }
-
-
-
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+
 from core.database import get_db
+from models.employee_model import Employee
+from models.employee_family_member_model import EmployeeFamilyMember
 
 from schemas.employee_schema import (
     EmployeeCreate,
-    EmployeeRead,
+    EmployeeCreateResponse,
     EmployeeStatusUpdate,
     EmployeeStatusResponse
 )
+
 from services.employee_service import (
     create_employee_service,
     get_employees_service,
@@ -68,14 +21,28 @@ from services.employee_service import (
 router = APIRouter(prefix="/employees", tags=["Employees"])
 
 
-@router.post("/", response_model=EmployeeRead)
-def create_employee(payload: EmployeeCreate, db: Session = Depends(get_db)):
-    return create_employee_service(payload, db)
-
-
-@router.get("/", response_model=list[EmployeeRead])
+@router.get("/", response_model=list[EmployeeCreateResponse])
 def get_employees(db: Session = Depends(get_db)):
-    return get_employees_service(db)
+    employees = get_employees_service(db)
+
+    result = []
+    for emp in employees:
+        result.append({
+            **emp.__dict__,
+            "family_member": emp.family_members[0] if emp.family_members else None
+        })
+
+    return result
+
+
+@router.post("/employee", response_model=EmployeeCreateResponse)
+def create_employee(employee: EmployeeCreate, db: Session = Depends(get_db)):
+    emp = create_employee_service(employee, db)
+
+    return {
+        **emp.__dict__,
+        "family_member": emp.family_members[0]
+    }
 
 
 @router.put("/{emp_id}/status", response_model=EmployeeStatusResponse)
