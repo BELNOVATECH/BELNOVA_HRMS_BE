@@ -1,11 +1,12 @@
 from pydantic import BaseModel
 from datetime import date
-from typing import Optional, List
+from typing import Optional
 
 from schemas.employee_family_schema import (
     FamilyMemberCreate,
     FamilyMemberResponse
 )
+
 
 # ---------- CREATE ----------
 class EmployeeCreate(BaseModel):
@@ -55,13 +56,13 @@ class EmployeeCreate(BaseModel):
     created_by: Optional[int] = None
     user_id: Optional[int] = None
 
-    # 🔥 SINGLE FAMILY INPUT
     family_member: FamilyMemberCreate
 
     class Config:
         extra = "forbid"
 
 
+# ---------- RESPONSE ----------
 class EmployeeCreateResponse(BaseModel):
     id: int
     first_name: str
@@ -112,7 +113,6 @@ class EmployeeCreateResponse(BaseModel):
 
     is_active: bool
 
-    # ✅ OPTIONAL
     family_member: Optional[FamilyMemberResponse] = None
 
     class Config:
