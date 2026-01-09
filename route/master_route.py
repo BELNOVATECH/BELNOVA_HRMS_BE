@@ -26,15 +26,3 @@ def create_permission(
 ):
     return create_permission_controller(data, db)
 
-
-# ✅ DELETE ACCESS
-@router.delete("/permissions")
-def delete_permission(
-    role_id: int,
-    module_id: int,
-    screen_id: Optional[int] = None,
-    db: Session = Depends(get_db)
-):
-    return delete_permission_controller(
-        role_id, module_id, screen_id, db
-    )
