@@ -1,15 +1,14 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from datetime import datetime
+from sqlalchemy import desc
 
 from models.candidate_applied_model import CandidateApplied
 from models.interview_stage import InterviewStage
 from models.interview_schedule_model import InterviewSchedule
 
 
-
 def schedule_interview_service(payload, db: Session):
-
     candidate = db.query(CandidateApplied).filter(
         CandidateApplied.id == payload.candidate_id,
         CandidateApplied.is_active == True
@@ -37,7 +36,7 @@ def schedule_interview_service(payload, db: Session):
 
     interview = InterviewSchedule(
         candidate_id=candidate.id,
-        designation_id=payload.designation_id,   # ✅ changed
+        designation_id=payload.designation_id,
         status_id=payload.status_id,
         stage_id=payload.stage_id,
         interview_date=payload.interview_date,
@@ -53,7 +52,6 @@ def schedule_interview_service(payload, db: Session):
     return interview
 
 
-
 def create_interview_schedule_service(payload, db: Session):
     interview = InterviewSchedule(**payload.dict())
     db.add(interview)
@@ -63,11 +61,18 @@ def create_interview_schedule_service(payload, db: Session):
 
 
 def get_interview_schedule_service(db: Session):
-    return db.query(InterviewSchedule).filter(
-        InterviewSchedule.is_active == True
-    ).all()
+    return (
+        db.query(InterviewSchedule)
+        .filter(InterviewSchedule.is_active == True)
+        .order_by(
+            desc(InterviewSchedule.modified_date),
+            desc(InterviewSchedule.created_date)
+        )
+        .all()
+    )
 
 
+# ⭐⭐ THIS API NOW HANDLES rating + feedback
 def update_interview_schedule_service(db: Session, interview_id: int, payload):
     interview = db.query(InterviewSchedule).filter(
         InterviewSchedule.id == interview_id,
