@@ -16,7 +16,7 @@ import models.master_screen_permission
 # -------------------------------------------------
 # ROUTERS
 # -------------------------------------------------
-from route.auth_route import router as auth_router
+from route.auth_route import auth_router
 from route.leave_route import router as leave_router
 from route.leave_balance_route import router as balance_router
 from route.candidate_applied_route import candidate_router
