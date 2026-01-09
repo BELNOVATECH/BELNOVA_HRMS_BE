@@ -63,36 +63,3 @@ def create_permission_service(data, db: Session):
     db.refresh(permission)
     return permission
 
-def delete_permission_service(
-    role_id: int,
-    module_id: int,
-    screen_id: Optional[int],
-    db: Session
-):
-    query = db.query(MasterScreenPermission).filter(
-        MasterScreenPermission.role_id == role_id,
-        MasterScreenPermission.module_id == module_id,
-        MasterScreenPermission.is_active == True,
-    )
-
-    # 🔹 Screen-level delete
-    if screen_id is not None:
-        query = query.filter(
-            MasterScreenPermission.screen_id == screen_id
-        )
-    # 🔹 Module-level delete
-    else:
-        query = query.filter(
-            MasterScreenPermission.screen_id.is_(None)
-        )
-
-    permission = query.first()
-
-    if permission:
-        permission.is_active = False
-        db.commit()
-
-    return {"message": "Permission removed"}
-
-
-

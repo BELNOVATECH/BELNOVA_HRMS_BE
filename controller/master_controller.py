@@ -19,14 +19,6 @@ def get_all_permissions_controller(db: Session):
 def create_permission_controller(data, db: Session):
     return create_permission_service(data, db)
 
-def delete_permission_controller(
-    role_id: int,
-    module_id: int,
-    screen_id: Optional[int],
-    db: Session
-):
-    return delete_permission_service(
-        role_id, module_id, screen_id, db
-    )
+    
 
 
