@@ -48,7 +48,7 @@ app = FastAPI(
 )
 
 # -------------------------------------------------
-# ✅ CORRECT CORS
+# ✅ CORS
 # -------------------------------------------------
 app.add_middleware(
     CORSMiddleware,
@@ -70,9 +70,13 @@ app.add_middleware(
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # -------------------------------------------------
-# CREATE TABLES
+# CREATE TABLES (SAFE)
 # -------------------------------------------------
-Base.metadata.create_all(bind=engine)
+try:
+    Base.metadata.create_all(bind=engine)
+    print("✅ Tables created / verified")
+except Exception as e:
+    print("⚠️ Skipping table creation (DB not reachable):", e)
 
 # -------------------------------------------------
 # ROUTES
