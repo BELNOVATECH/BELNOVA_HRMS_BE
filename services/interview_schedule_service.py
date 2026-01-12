@@ -85,7 +85,9 @@ def update_interview_schedule_service(db: Session, interview_id: int, payload):
     for key, value in payload.dict(exclude_unset=True).items():
         setattr(interview, key, value)
 
+    # ✅ THIS LINE IS CRITICAL
     interview.modified_date = datetime.utcnow()
+
     db.commit()
     db.refresh(interview)
 

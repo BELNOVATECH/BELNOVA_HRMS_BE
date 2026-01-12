@@ -1,11 +1,11 @@
-from fastapi import FastAPI
+from fastapi import FastAPI 
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from core.database import Base, engine
 
 # -------------------------------------------------
-# 🔥 IMPORT ALL MODELS
+# 🔥 IMPORT ALL MODELS (IMPORTANT FOR TABLE CREATION)
 # -------------------------------------------------
 import models.department
 import models.designation_model
@@ -16,7 +16,7 @@ import models.master_screen_permission
 # -------------------------------------------------
 # ROUTERS
 # -------------------------------------------------
-from route.auth_route import router as auth_router
+from route.auth_route import auth_router
 from route.leave_route import router as leave_router
 from route.leave_balance_route import router as balance_router
 from route.candidate_applied_route import candidate_router
@@ -50,20 +50,20 @@ app = FastAPI(
 )
 
 # -------------------------------------------------
-# ✅ CORRECT CORS
+# ✅ CORS (FIXED & SAFE)
 # -------------------------------------------------
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://hrms-portal-iota.vercel.app",
+        "https://hrms-portal-iota.vercel.app",  # production
         "http://localhost:3000",
         "http://127.0.0.1:3000",
         "http://localhost:5173",
         "http://127.0.0.1:5173",
     ],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["*"],     # 🔥 REQUIRED for PUT / POST
+    allow_headers=["*"],     # 🔥 REQUIRED for Authorization / JSON
 )
 
 # -------------------------------------------------
@@ -72,9 +72,13 @@ app.add_middleware(
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # -------------------------------------------------
-# CREATE TABLES
+# CREATE TABLES (SAFE)
 # -------------------------------------------------
-Base.metadata.create_all(bind=engine)
+try:
+    Base.metadata.create_all(bind=engine)
+    print("✅ Tables created / verified")
+except Exception as e:
+    print("⚠️ Skipping table creation (DB not reachable):", e)
 
 # -------------------------------------------------
 # ROUTES
@@ -93,10 +97,26 @@ app.include_router(employee_router)
 app.include_router(upload_router)
 app.include_router(department_route)
 
-app.include_router(interview_schedule_router, prefix="/interview-schedule", tags=["Interview Schedule"])
-app.include_router(interview_stage_router, prefix="/interview-stage", tags=["Interview Stage"])
-app.include_router(holiday_router, prefix="/holidays", tags=["Holiday Calendar"])
-app.include_router(job_route, prefix="/job-openings", tags=["Job Openings"])
+app.include_router(
+    interview_schedule_router,
+    prefix="/interview-schedule",
+    tags=["Interview Schedule"]
+)
+app.include_router(
+    interview_stage_router,
+    prefix="/interview-stage",
+    tags=["Interview Stage"]
+)
+app.include_router(
+    holiday_router,
+    prefix="/holidays",
+    tags=["Holiday Calendar"]
+)
+app.include_router(
+    job_route,
+    prefix="/job-openings",
+    tags=["Job Openings"]
+)
 
 app.include_router(employee_rating_router)
 app.include_router(vw_performance_rating_router)

@@ -8,8 +8,6 @@ class MasterScreenPermission(Base):
 
     role_id = Column(Integer, nullable=False)
     module_id = Column(Integer, ForeignKey("master_module.id"), nullable=False)
-
-    # ✅ FIX: nullable screen_id (for module-only permission)
     screen_id = Column(Integer, ForeignKey("master_screen.id"), nullable=True)
 
     can_view = Column(Boolean, default=False)

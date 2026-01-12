@@ -18,41 +18,51 @@ from services.employee_service import (
 router = APIRouter(prefix="/employees", tags=["Employees"])
 
 
+# ============================================================
+# CREATE EMPLOYEE (User + Employee + Family Members)
+# ============================================================
+@router.post("/employee", response_model=EmployeeCreateResponse)
+def create_employee(payload: EmployeeCreate, db: Session = Depends(get_db)):
+    emp = create_employee_service(payload, db)
+
+    return {
+        **emp.__dict__,
+        "family_member": emp.family_members   # 🔥 now returns list
+    }
+
+
+# ============================================================
+# GET ALL EMPLOYEES
+# ============================================================
 @router.get("/", response_model=list[EmployeeCreateResponse])
 def get_employees(db: Session = Depends(get_db)):
     employees = get_employees_service(db)
 
-    result = []
-    for emp in employees:
-        result.append({
+    return [
+        {
             **emp.__dict__,
-            "family_member": emp.family_members[0] if emp.family_members else None
-        })
+            "family_member": emp.family_members
+        }
+        for emp in employees
+    ]
 
-    return result
 
-
-# ✅ NEW: GET EMPLOYEE BY ID
+# ============================================================
+# GET EMPLOYEE BY ID
+# ============================================================
 @router.get("/{emp_id}", response_model=EmployeeCreateResponse)
 def get_employee_by_id(emp_id: int, db: Session = Depends(get_db)):
     emp = get_employee_by_id_service(emp_id, db)
 
     return {
         **emp.__dict__,
-        "family_member": emp.family_members[0] if emp.family_members else None
+        "family_member": emp.family_members
     }
 
 
-@router.post("/employee", response_model=EmployeeCreateResponse)
-def create_employee(employee: EmployeeCreate, db: Session = Depends(get_db)):
-    emp = create_employee_service(employee, db)
-
-    return {
-        **emp.__dict__,
-        "family_member": emp.family_members[0]
-    }
-
-
+# ============================================================
+# ACTIVATE / DEACTIVATE EMPLOYEE
+# ============================================================
 @router.put("/{emp_id}/status", response_model=EmployeeStatusResponse)
 def update_employee_status(
     emp_id: int,
@@ -60,6 +70,7 @@ def update_employee_status(
     db: Session = Depends(get_db)
 ):
     emp = update_employee_status_service(emp_id, payload.is_active, db)
+
     return {
         "emp_id": emp.id,
         "first_name": emp.first_name,

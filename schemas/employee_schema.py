@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from datetime import date
-from typing import Optional
+from typing import Optional, List
 
 from schemas.employee_family_schema import (
     FamilyMemberCreate,
@@ -8,7 +8,9 @@ from schemas.employee_family_schema import (
 )
 
 
-# ---------- CREATE ----------
+# =========================================================
+# CREATE
+# =========================================================
 class EmployeeCreate(BaseModel):
     first_name: str
     last_name: Optional[str] = None
@@ -56,13 +58,16 @@ class EmployeeCreate(BaseModel):
     created_by: Optional[int] = None
     user_id: Optional[int] = None
 
-    family_member: FamilyMemberCreate
+    # 🔥 CORRECT FIELD NAME
+    family_members: List[FamilyMemberCreate]
 
     class Config:
         extra = "forbid"
 
 
-# ---------- RESPONSE ----------
+# =========================================================
+# RESPONSE
+# =========================================================
 class EmployeeCreateResponse(BaseModel):
     id: int
     first_name: str
@@ -113,12 +118,16 @@ class EmployeeCreateResponse(BaseModel):
 
     is_active: bool
 
-    family_member: Optional[FamilyMemberResponse] = None
+    # 🔥 CORRECT FIELD NAME
+    family_members: List[FamilyMemberResponse] = []
 
     class Config:
         from_attributes = True
 
 
+# =========================================================
+# STATUS UPDATE
+# =========================================================
 class EmployeeStatusUpdate(BaseModel):
     is_active: bool
 
