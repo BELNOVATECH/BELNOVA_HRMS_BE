@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI 
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
@@ -39,6 +39,9 @@ from route.top_performer_route import router as top_performer_router
 from route.average_rating_route import router as average_rating_router
 from route.pending_review_route import router as pending_review_router
 from route.dashboard_route import router as dashboard_router
+from route.employee_newjoinings import router as employee_newjoinings_router
+from route.payroll import router as payroll_cost_router
+
 # -------------------------------------------------
 # APP INIT
 # -------------------------------------------------
@@ -103,6 +106,9 @@ app.include_router(top_performer_router)
 app.include_router(average_rating_router)
 app.include_router(pending_review_router)
 app.include_router(dashboard_router)
+app.include_router(payroll_cost_router, prefix="/api")
+app.include_router(employee_newjoinings_router, prefix="/api")
+
 
 # -------------------------------------------------
 # ROOT
