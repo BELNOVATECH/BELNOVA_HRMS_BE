@@ -1,29 +1,108 @@
 from sqlalchemy.orm import Session, joinedload
 from datetime import datetime
 from fastapi import HTTPException
+from passlib.context import CryptContext
 
+from models.user_model import User
 from models.employee_model import Employee
 from models.employee_family_member_model import EmployeeFamilyMember
 from schemas.employee_schema import EmployeeCreate
 
 
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+def hash_password(password: str):
+    print("🔥 bcrypt input type:", type(password))
+    print("🔥 bcrypt input value:", password)
+    safe_password = str(password)[:72]
+    return pwd_context.hash(safe_password)
+
+
+# =========================================================
+# CREATE EMPLOYEE (User → Employee → Family Members)
+# =========================================================
 def create_employee_service(payload: EmployeeCreate, db: Session):
-    emp = Employee(**payload.dict(exclude={"family_member"}))
-    db.add(emp)
-    db.commit()
-    db.refresh(emp)
+    try:
+        # -------------------------------
+        # 1️⃣ Generate Safe Password
+        # -------------------------------
+        birth_year = payload.date_of_birth.year if payload.date_of_birth else datetime.utcnow().year
 
-    family = EmployeeFamilyMember(
-        emp_id=emp.id,
-        **payload.family_member.dict()
-    )
-    db.add(family)
-    db.commit()
+        raw_password = str(payload.first_name) + str(birth_year)   # Ravi1992
+        raw_password = raw_password[:72]                           # bcrypt safety
 
-    db.refresh(emp)
-    return emp
+        hashed_password = hash_password(raw_password)
+
+        # -------------------------------
+        # 2️⃣ CREATE USER
+        # -------------------------------
+        user = User(
+            first_name=payload.first_name,
+            last_name=payload.last_name,
+            email=payload.email,
+            mobile=payload.mobile,
+            gender_id=payload.gender_id,
+            dob=payload.date_of_birth,
+            role_id=payload.role_id,
+            password=hashed_password,
+            created_by=payload.created_by
+        )
+        db.add(user)
+        db.flush()
+
+        # -------------------------------
+        # 3️⃣ CREATE EMPLOYEE
+        # -------------------------------
+        emp = Employee(
+            first_name=payload.first_name,
+            last_name=payload.last_name,
+            email=payload.email,
+            mobile=payload.mobile,
+            emp_code=payload.emp_code,
+            designation_id=payload.designation_id,
+            department_id=payload.department_id,
+            manager_id=payload.manager_id,
+            salary=payload.salary,
+            ctc=payload.ctc,
+            join_date=payload.join_date,
+            hired_date=payload.hired_date,
+            bank_id=payload.bank_id,
+            bank_ac_no=payload.bank_ac_no,
+            ifsc_code=payload.ifsc_code,
+            pan=payload.pan,
+            esic=payload.esic,
+            user_id=user.id,
+            created_by=payload.created_by
+        )
+        db.add(emp)
+        db.flush()
+
+        # -------------------------------
+        # 4️⃣ FAMILY MEMBERS
+        # -------------------------------
+        for fm in payload.family_members:
+            db.add(EmployeeFamilyMember(
+                emp_id=emp.id,
+                **fm.dict(),
+                created_by=payload.created_by
+            ))
+
+        # -------------------------------
+        # 5️⃣ COMMIT ALL
+        # -------------------------------
+        db.commit()
+        db.refresh(emp)
+        return emp
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=400, detail=str(e))
 
 
+# =========================================================
+# GET ALL EMPLOYEES
+# =========================================================
 def get_employees_service(db: Session):
     return (
         db.query(Employee)
@@ -32,7 +111,9 @@ def get_employees_service(db: Session):
     )
 
 
-# ✅ NEW: GET EMPLOYEE BY ID
+# =========================================================
+# GET EMPLOYEE BY ID
+# =========================================================
 def get_employee_by_id_service(emp_id: int, db: Session):
     emp = (
         db.query(Employee)
@@ -47,13 +128,18 @@ def get_employee_by_id_service(emp_id: int, db: Session):
     return emp
 
 
+# =========================================================
+# UPDATE EMPLOYEE ACTIVE STATUS
+# =========================================================
 def update_employee_status_service(emp_id: int, is_active: bool, db: Session):
     emp = db.query(Employee).filter(Employee.id == emp_id).first()
+
     if not emp:
         raise HTTPException(status_code=404, detail="Employee not found")
 
     emp.is_active = is_active
     emp.modified_date = datetime.utcnow()
+
     db.commit()
     db.refresh(emp)
     return emp
