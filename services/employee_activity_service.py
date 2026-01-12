@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, aliased
 from fastapi import HTTPException
 from datetime import datetime, timedelta
 
@@ -13,101 +13,91 @@ def create_employee_activity_service(
     payload: EmployeeActivityCreate,
     db: Session
 ):
-    # ✅ Validate employee exists
-    emp = db.query(Employee).filter(Employee.id == payload.emp_id).first()
-    if not emp:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Employee with id {payload.emp_id} does not exist"
-        )
-
     activity = EmployeeActivity(
         emp_id=payload.emp_id,
         module_id=payload.module_id,
         screen_id=payload.screen_id,
         activity_description=payload.activity_description,
-
         created_by=payload.created_by,
-        created_date=payload.created_date or datetime.utcnow(),
-
+        created_date=datetime.utcnow(),
         modified_by=payload.modified_by,
-        modified_date=payload.modified_date,
-
+        modified_date=datetime.utcnow(),
         is_active=payload.is_active
     )
 
     db.add(activity)
     db.commit()
     db.refresh(activity)
-    return activity
 
-
-# ---------- GET (LAST 7 DAYS / CUSTOM RANGE) ----------
-
+    return enrich_activity(activity, db)
 
 
 
 
 def get_employee_activity_service(
     db: Session,
-    from_datetime: Optional[datetime] = None,
-    to_datetime: Optional[datetime] = None
+    from_datetime=None,
+    to_datetime=None
 ):
-    # default → last 7 days
-    if not from_datetime and not to_datetime:
-        to_datetime = datetime.utcnow()
-        from_datetime = to_datetime - timedelta(days=7)
+    query = db.query(EmployeeActivity)
 
-    query = (
-        db.query(
-            EmployeeActivity.id,
-            EmployeeActivity.emp_id,
-            Employee.first_name.label("employee_first_name"),
-            Employee.last_name.label("employee_last_name"),
-
-            EmployeeActivity.module_id,
-            MasterModule.module_name,
-
-            EmployeeActivity.screen_id,
-            MasterScreen.screen_name,
-
-            EmployeeActivity.activity_description,
-            EmployeeActivity.created_by,
-            EmployeeActivity.created_date,
-            EmployeeActivity.modified_by,
-            EmployeeActivity.modified_date,
-            EmployeeActivity.is_active,
+    if from_datetime and to_datetime:
+        query = query.filter(
+            EmployeeActivity.created_date.between(from_datetime, to_datetime)
         )
-        .join(Employee, Employee.id == EmployeeActivity.emp_id)
-        .join(MasterModule, MasterModule.id == EmployeeActivity.module_id)
-        .join(MasterScreen, MasterScreen.id == EmployeeActivity.screen_id)
-        .filter(EmployeeActivity.created_date.between(from_datetime, to_datetime))
-        .order_by(EmployeeActivity.created_date.desc())
-    )
+    else:
+        last_7_days = datetime.utcnow() - timedelta(days=7)
+        query = query.filter(EmployeeActivity.created_date >= last_7_days)
 
-    results = query.all()
+    activities = query.order_by(EmployeeActivity.created_date.desc()).all()
 
-    # convert SQLAlchemy rows → dict
-    activities = []
-    for r in results:
-        activities.append({
-            "id": r.id,
-            "emp_id": r.emp_id,
-            "employee_first_name": r.employee_first_name,
-            "employee_last_name": r.employee_last_name,
+    return [enrich_activity(a, db) for a in activities]
 
-            "module_id": r.module_id,
-            "module_name": r.module_name,
+def enrich_activity(activity: EmployeeActivity, db: Session):
+    EmployeeAlias = aliased(Employee)
 
-            "screen_id": r.screen_id,
-            "screen_name": r.screen_name,
+    emp = db.query(Employee).filter(Employee.id == activity.emp_id).first()
+    creator = db.query(EmployeeAlias).filter(
+        EmployeeAlias.id == activity.created_by
+    ).first()
 
-            "activity_description": r.activity_description,
-            "created_by": r.created_by,
-            "created_date": r.created_date,
-            "modified_by": r.modified_by,
-            "modified_date": r.modified_date,
-            "is_active": r.is_active,
-        })
+    modifier = None
+    if activity.modified_by:
+        modifier = db.query(EmployeeAlias).filter(
+            EmployeeAlias.id == activity.modified_by
+        ).first()
 
-    return activities
+    module = db.query(MasterModule).filter(
+        MasterModule.id == activity.module_id
+    ).first()
+
+    screen = db.query(MasterScreen).filter(
+        MasterScreen.id == activity.screen_id
+    ).first()
+
+    return {
+        "id": activity.id,
+
+        "emp_id": activity.emp_id,
+        "employee_first_name": emp.first_name if emp else "",
+        "employee_last_name": emp.last_name if emp else "",
+
+        "created_by": activity.created_by,
+        "created_by_first_name": creator.first_name if creator else "",
+        "created_by_last_name": creator.last_name if creator else "",
+
+        "modified_by": activity.modified_by,
+        "modified_by_first_name": modifier.first_name if modifier else None,
+        "modified_by_last_name": modifier.last_name if modifier else None,
+
+        "module_id": activity.module_id,
+        "module_name": module.module_name if module else "",
+
+        "screen_id": activity.screen_id,
+        "screen_name": screen.screen_name if screen else "",
+
+        "activity_description": activity.activity_description,
+        "created_date": activity.created_date,
+        "modified_date": activity.modified_date,
+        "is_active": activity.is_active
+    }

@@ -11,25 +11,32 @@ class EmployeeActivityCreate(BaseModel):
     activity_description: str
 
     created_by: int
-    created_date: Optional[datetime] = None
+    # created_date: Optional[datetime] = None
 
     modified_by: Optional[int] = None
-    modified_date: Optional[datetime] = None
+    # modified_date: Optional[datetime] = None
 
     is_active: Optional[bool] = True
 
 
 # ---------- RESPONSE ----------
-from pydantic import BaseModel
-from datetime import datetime
-from typing import List
+
 
 
 class EmployeeActivityResponse(BaseModel):
     id: int
+
     emp_id: int
     employee_first_name: str
     employee_last_name: str
+
+    created_by: int
+    created_by_first_name: str
+    created_by_last_name: str
+
+    modified_by: Optional[int]
+    modified_by_first_name: Optional[str]
+    modified_by_last_name: Optional[str]
 
     module_id: int
     module_name: str
@@ -38,10 +45,8 @@ class EmployeeActivityResponse(BaseModel):
     screen_name: str
 
     activity_description: str
-    created_by: int
     created_date: datetime
-    modified_by: int | None
-    modified_date: datetime | None
+    modified_date: Optional[datetime]
     is_active: bool
 
 
