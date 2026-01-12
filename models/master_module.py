@@ -6,7 +6,7 @@ class MasterModule(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     module_name = Column(String, nullable=False)
-    fa_fa_icon = Column(String, nullable=True)
+    # fa_fa_icon = Column(String, nullable=True)
     routes = Column(String, nullable=True)
     order_by = Column(Integer, nullable=True)
     is_active = Column(Boolean, default=True)
