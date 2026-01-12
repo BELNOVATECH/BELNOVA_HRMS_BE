@@ -8,6 +8,7 @@ from models.master_role_model import MasterRole
 from models.master_module import MasterModule
 from models.master_screen import MasterScreen
 from models.master_screen_permission import MasterScreenPermission
+from utils.hashing import verify_password   # 🔥 use hashing utils
 
 SECRET_KEY = "HRMS_SECRET"
 ALGORITHM = "HS256"
@@ -15,20 +16,18 @@ ALGORITHM = "HS256"
 
 def login_service(payload, db: Session):
 
-    # 1️⃣ Login using EMAIL
     user = db.query(User).filter(
-        User.email == payload.email,   # username = email
+        User.email == payload.email,
         User.is_active == True
     ).first()
 
     if not user:
         raise HTTPException(401, "Invalid email or password")
 
-    # 2️⃣ Password check (plain text for now)
-    if user.password != payload.password:
+    # 🔥 CORRECT password check
+    if not verify_password(payload.password, user.password):
         raise HTTPException(401, "Invalid email or password")
 
-    # 3️⃣ Load Role from users.role_id
     role = db.query(MasterRole).filter(
         MasterRole.id == user.role_id,
         MasterRole.is_active == True
@@ -37,7 +36,6 @@ def login_service(payload, db: Session):
     if not role:
         raise HTTPException(403, "Role not assigned")
 
-    # 4️⃣ Load screen permissions
     permissions = (
         db.query(
             MasterModule.id.label("module_id"),
@@ -60,7 +58,6 @@ def login_service(payload, db: Session):
         .all()
     )
 
-    # 5️⃣ Generate JWT
     token = jwt.encode(
         {
             "user_id": user.id,
