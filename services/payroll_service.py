@@ -169,23 +169,18 @@
 #     }
 
 
-
-from datetime import date
 import calendar
 from decimal import Decimal
-from collections import defaultdict
 
 from models.employee_model import Employee
-from models.leave_model import LeaveRequest
 from models.master_perc_cal_id import MasterPercCalId
-
-APPROVED_STATUS_ID = 11
+from utils.amount_to_words import amount_to_words
 
 
 def get_payroll_preview(
-    emp: Employee,                      
-    perc: MasterPercCalId,              
-    leave_map: dict,                   
+    emp: Employee,
+    perc: MasterPercCalId,
+    leave_map: dict,
     month: int,
     year: int
 ):
@@ -236,53 +231,29 @@ def get_payroll_preview(
     if net_salary < 0:
         net_salary = Decimal("0.00")
 
-    # =========================
-    # RESPONSE (UNCHANGED)
-    # =========================
     return {
-        "employee": {
-            "id": emp.id,
-            "name": f"{emp.first_name} {emp.last_name}",
-            "emp_code": emp.emp_code,
-            "designation_id": emp.designation_id,
-            "designation_name": (
-                emp.designation.designation_name
-                if hasattr(emp, "designation") and emp.designation
-                else None
-            ),
-            "join_date": emp.join_date,
-            "bank_account_no": emp.bank_ac_no,
-            "ifsc_code": emp.ifsc_code,
-            "uan": emp.uan,
-            "pan": emp.pan
-        },
-        "period": f"{month}/{year}",
-        "ctc": {
-            "annual": float(annual_ctc),
-            "monthly": round(float(monthly_ctc), 2)
-        },
         "attendance": {
             "total_days": total_days,
-            "paid_days": float(paid_days),
-            "lop_days": float(lop_days)
+            "paid_days": int(paid_days),
+            "lop_days": int(lop_days),
         },
         "earnings": {
-            "basic": round(float(basic), 2),
-            "hra": round(float(hra), 2),
-            "medical_allowance": round(float(medical), 2),
-            "special_allowance": round(float(special), 2),
-            "arrears": round(float(arrears), 2),
-            "gross_salary": round(float(gross_salary), 2),
-            "lop_amount": round(float(lop_amount), 2),
-            "gross_after_lop": round(float(gross_after_lop), 2)
+            "basic": float(basic),
+            "hra": float(hra),
+            "medical_allowance": float(medical),
+            "special_allowance": float(special),
+            "arrears": float(arrears),
+            "gross_salary": float(gross_salary),
+            "gross_after_lop": float(gross_after_lop),
         },
         "deductions": {
-            "pf": round(float(pf), 2),
-            "esic": round(float(esic), 2),
-            "pt": round(float(pt), 2),
-            "tds": round(float(tds), 2),
-            "other_deductions": round(float(other_deductions), 2),
-            "total_deductions": round(float(total_deductions), 2)
+            "pf": float(pf),
+            "esic": float(esic),
+            "pt": float(pt),
+            "tds": float(tds),
+            "other_deductions": float(other_deductions),
+            "total_deductions": float(total_deductions),
         },
-        "net_salary": round(float(net_salary), 2)
+        "net_salary": float(net_salary),
+        "net_pay_in_words": amount_to_words(net_salary),  # ✅ GENERATED HERE
     }

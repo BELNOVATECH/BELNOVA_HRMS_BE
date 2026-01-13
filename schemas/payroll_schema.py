@@ -37,29 +37,31 @@ class PayrollRequest(BaseModel):
     year: int
 
 class PayrollResponse(BaseModel):
-    id: int
     emp_id: int
     month_id: int
     year_id: int
 
-    total_days: Optional[int] = 0
-    paid_days: Optional[int] = 0
-    lop_days: Optional[int] = 0
+    total_days: int
+    paid_days: int
+    lop_days: int
 
-    basic: Optional[Decimal] = Decimal("0.00")
-    hra: Optional[Decimal] = Decimal("0.00")
-    special_allowance: Optional[Decimal] = Decimal("0.00")
+    basic: Decimal
+    hra: Decimal
+    medical_allowance: Decimal
+    special_allowance: Decimal
+    arrears: Decimal
 
-    total_earnings: Optional[Decimal] = Decimal("0.00")
+    total_earnings: Decimal
 
-    pf: Optional[Decimal] = Decimal("0.00")
-    esic: Optional[Decimal] = Decimal("0.00")
-    pt: Optional[Decimal] = Decimal("0.00")
+    pf: Decimal
+    esic: Decimal
+    pt: Decimal
+    tds: Decimal
+    other_deductions: Decimal
 
-    total_deductions: Optional[Decimal] = Decimal("0.00")
-    net_pay: Optional[Decimal] = Decimal("0.00")
-
-    period: Optional[str] = ""
+    total_deductions: Decimal
+    net_pay: Decimal
+    net_pay_in_words: Optional[str]   # ✅ IMPORTANT
 
     class Config:
-        from_attributes = True   # SQLAlchemy → Pydantic
+        from_attributes = True
