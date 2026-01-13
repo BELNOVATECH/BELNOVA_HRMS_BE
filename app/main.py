@@ -12,6 +12,9 @@ import models.designation_model
 import models.master_module
 import models.master_screen
 import models.master_screen_permission
+from models.master_year import MasterYear
+from models.master_month import MasterMonth
+from models.payroll_model import Payroll
 
 # -------------------------------------------------
 # ROUTERS
