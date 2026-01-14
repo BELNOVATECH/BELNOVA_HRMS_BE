@@ -3,7 +3,7 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from datetime import datetime, timedelta
-import jwt
+from jose import jwt
 
 from models.user_model import User
 from models.master_role_model import MasterRole
