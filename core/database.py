@@ -24,6 +24,7 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
     raise RuntimeError("❌ DATABASE_URL not set")
 
+# Use Render DATABASE_URL (postgresql+psycopg2://...)
 engine = create_engine(
     DATABASE_URL,
     pool_pre_ping=True,   # avoids stale connections
@@ -41,6 +42,7 @@ SessionLocal = sessionmaker(
 Base = declarative_base()
 
 def get_db():
+    """Dependency for FastAPI routes to get a DB session"""
     db = SessionLocal()
     try:
         yield db
@@ -71,7 +73,7 @@ else:
 def get_raw_conn():
     """
     Generator for raw psycopg2 connections.
-    Use only when needed (functions, heavy bulk ops).
+    Use only when needed (bulk ops, raw SQL).
     """
     if not db_pool:
         raise RuntimeError("Raw DB connection not available")
