@@ -28,7 +28,7 @@ from route.upload_route import router as upload_router
 from route.department_route import router as department_route
 from route.role_route import role_router
 from route.job_route import router as job_route
-from route.interview_schedule_route import interview_schedule_router
+from route.interview_schedule_route import router as interview_schedule_router
 from route.interview_stage_route import router as interview_stage_router
 from route.holiday_route import holiday_router
 from route.designation_route import designation_router
@@ -100,21 +100,11 @@ app.include_router(employee_router)
 app.include_router(upload_router)
 app.include_router(department_route)
 
-app.include_router(
-    interview_schedule_router,
-    prefix="/interview-schedule",
-    tags=["Interview Schedule"]
-)
-app.include_router(
-    interview_stage_router,
-    prefix="/interview-stage",
-    tags=["Interview Stage"]
-)
-app.include_router(
-    holiday_router,
-    prefix="/holidays",
-    tags=["Holiday Calendar"]
-)
+app.include_router(interview_schedule_router)
+app.include_router(interview_stage_router)
+app.include_router(holiday_router)
+
+
 app.include_router(
     job_route,
     prefix="/job-openings",

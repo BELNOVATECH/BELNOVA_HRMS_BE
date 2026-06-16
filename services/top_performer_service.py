@@ -1,4 +1,4 @@
-from models.employee_rating_model import EmployeeRating
+from models.generated_models import EmployeeRating
 
 def get_top_performers_service(db):
     return (

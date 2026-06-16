@@ -1,4 +1,11 @@
-from models.vw_performance_rating_model import VwPerformanceRating
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+from models.generated_models import t_vw_performance_rating
 
-def get_all_performance_ratings_service(db):
-    return db.query(VwPerformanceRating).all()
+def get_performance_ratings_service(db: Session):
+
+    data = db.execute(
+        select(t_vw_performance_rating)
+    ).mappings().all()
+
+    return data

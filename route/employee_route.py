@@ -17,7 +17,7 @@ router = APIRouter(
 )
 
 
-@router.post("/")
+@router.post("")
 def create_employee(
     payload: EmployeeCreate,
     db: Session = Depends(get_db)
@@ -28,7 +28,7 @@ def create_employee(
     )
 
 
-@router.get("/")
+@router.get("")
 def get_employees(
     db: Session = Depends(get_db)
 ):

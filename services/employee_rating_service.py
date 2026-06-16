@@ -1,5 +1,5 @@
-from models.employee_rating_model import EmployeeRating
 from datetime import datetime
+from models.generated_models import EmployeeRating
 
 def create_employee_rating_service(payload, db):
     rating = EmployeeRating(
@@ -15,4 +15,12 @@ def create_employee_rating_service(payload, db):
     db.add(rating)
     db.commit()
     db.refresh(rating)
-    return rating
+
+    return {
+        "id": rating.id,
+        "emp_id": rating.emp_id,
+        "designation_id": rating.designation_id,
+        "rating": float(rating.rating),
+        "reviewer_id": rating.reviewer_id,
+        "message": "Employee rating created successfully"
+    }
