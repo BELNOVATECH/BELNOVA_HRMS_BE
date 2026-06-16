@@ -1,29 +1,40 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from datetime import date
-from typing import Optional, List
-
-from schemas.employee_family_schema import (
-    FamilyMemberCreate,
-    FamilyMemberResponse
-)
+from decimal import Decimal
+from typing import List, Optional
 
 
-# =========================================================
-# CREATE
-# =========================================================
-class EmployeeCreate(BaseModel):
+class FamilyMemberCreate(BaseModel):
+    relation_id: int
     first_name: str
-    last_name: Optional[str] = None
-    email: Optional[str] = None
-    mobile: Optional[str] = None
+    last_name: str
+    date_of_birth: date
+    occupation_id: int
+    phone: Optional[str] = None
+    email: Optional[EmailStr] = None
+    present_address: str
+    permanent_address: str
+    bank_account: Optional[str] = None
+    ifsc_code: Optional[str] = None
+    pan: Optional[str] = None
+    aadhaar: str
+
+
+class EmployeeCreate(BaseModel):
+
+    first_name: str
+    last_name: str
+    email: EmailStr
+    mobile: str
 
     present_address: Optional[str] = None
     permanent_address: Optional[str] = None
-
     father_name: Optional[str] = None
+
     blood_group_id: Optional[int] = None
-    gender_id: Optional[int] = None
-    marital_status_id: Optional[int] = None
+    gender_id: int
+    marital_status_id: int
+
     date_of_birth: Optional[date] = None
 
     emergency_mobile: Optional[str] = None
@@ -31,20 +42,23 @@ class EmployeeCreate(BaseModel):
     aadhaar: Optional[str] = None
 
     emp_code: Optional[str] = None
-    designation_id: Optional[int] = None
-    department_id: Optional[int] = None
-    employee_type_id: Optional[int] = None
+
+    designation_id: int
+    department_id: int
+    employee_type_id: int
+
     manager_id: Optional[int] = None
-    role_id: Optional[int] = None
+    role_id: int
+
     work_location_id: Optional[int] = None
     shift_id: Optional[int] = None
 
     hired_date: Optional[date] = None
-    join_date: Optional[date] = None
+    join_date: date
     probation_end_date: Optional[date] = None
 
-    salary: Optional[float] = None
-    ctc: Optional[float] = None
+    salary: Decimal
+    ctc: Decimal
 
     bank_id: Optional[int] = None
     bank_ac_no: Optional[str] = None
@@ -55,85 +69,7 @@ class EmployeeCreate(BaseModel):
     esic: Optional[str] = None
 
     upload_doc: Optional[str] = None
+
     created_by: Optional[int] = None
-    user_id: Optional[int] = None
 
-    # 🔥 CORRECT FIELD NAME
-    family_members: List[FamilyMemberCreate]
-
-    class Config:
-        extra = "forbid"
-
-
-# =========================================================
-# RESPONSE
-# =========================================================
-class EmployeeCreateResponse(BaseModel):
-    id: int
-    first_name: str
-    last_name: Optional[str]
-    email: Optional[str]
-    mobile: Optional[str]
-
-    present_address: Optional[str]
-    permanent_address: Optional[str]
-
-    father_name: Optional[str]
-    blood_group_id: Optional[int]
-    gender_id: Optional[int]
-    marital_status_id: Optional[int]
-    date_of_birth: Optional[date]
-
-    emergency_mobile: Optional[str]
-    reference_mobile: Optional[str]
-    aadhaar: Optional[str]
-
-    emp_code: Optional[str]
-    designation_id: Optional[int]
-    department_id: Optional[int]
-    employee_type_id: Optional[int]
-    manager_id: Optional[int]
-    role_id: Optional[int]
-    work_location_id: Optional[int]
-    shift_id: Optional[int]
-
-    hired_date: Optional[date]
-    join_date: Optional[date]
-    probation_end_date: Optional[date]
-
-    salary: Optional[float]
-    ctc: Optional[float]
-
-    bank_id: Optional[int]
-    bank_ac_no: Optional[str]
-    ifsc_code: Optional[str]
-
-    pan: Optional[str]
-    uan: Optional[str]
-    esic: Optional[str]
-
-    upload_doc: Optional[str]
-    created_by: Optional[int]
-    user_id: Optional[int]
-
-    is_active: bool
-
-    # 🔥 CORRECT FIELD NAME
-    family_members: List[FamilyMemberResponse] = []
-
-    class Config:
-        from_attributes = True
-
-
-# =========================================================
-# STATUS UPDATE
-# =========================================================
-class EmployeeStatusUpdate(BaseModel):
-    is_active: bool
-
-
-class EmployeeStatusResponse(BaseModel):
-    emp_id: int
-    first_name: str
-    last_name: Optional[str]
-    is_active: bool
+    family_members: List[FamilyMemberCreate] = []
