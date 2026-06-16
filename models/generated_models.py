@@ -387,6 +387,7 @@ class MasterYear(Base):
     payslips: Mapped[list['Payslips']] = relationship('Payslips', back_populates='year')
 
 
+
 t_vw_performance_rating = Table(
     'vw_performance_rating', Base.metadata,
     Column('id', BigInteger),

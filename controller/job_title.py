@@ -1,4 +1,3 @@
-from sqlalchemy.orm import Session
 from services.job_service import (
     get_all_job_openings_service,
     create_job_title_service,
@@ -7,25 +6,33 @@ from services.job_service import (
 )
 
 
-def get_all_job_openings_controller(db: Session):
+def get_all_job_openings_controller(db):
     return get_all_job_openings_service(db)
 
 
-def create_job_title_controller(data, db: Session):
+def create_job_title_controller(data, db):
     return create_job_title_service(data, db)
 
 
 def update_job_opening_is_active_controller(
-    job_id: int,
-    is_active: bool,
-    db: Session
+    job_id,
+    is_active,
+    db
 ):
-    return update_job_opening_is_active_service(job_id, is_active, db)
+    return update_job_opening_is_active_service(
+        job_id,
+        is_active,
+        db
+    )
 
 
 def update_job_opening_controller(
-    job_id: int,
+    job_id,
     data,
-    db: Session
+    db
 ):
-    return update_job_opening_service(job_id, data, db)
+    return update_job_opening_service(
+        job_id,
+        data,
+        db
+    )

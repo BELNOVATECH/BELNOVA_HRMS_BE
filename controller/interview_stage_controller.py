@@ -1,63 +1,72 @@
 from sqlalchemy.orm import Session
-from fastapi import HTTPException
 
-from models.interview_stage import InterviewStage
-from schemas.interview_stage_schema import (
-    InterviewStageCreate,
-    InterviewStageUpdate,
-    InterviewStageIsActiveUpdate
+from services.interview_stage_service import (
+    create_interview_stage,
+    get_all_interview_stages,
+    get_interview_stage_by_id,
+    update_interview_stage,
+    update_interview_stage_is_active,
+    delete_interview_stage
 )
 
 
-def create_interview_stage(req: InterviewStageCreate, db: Session):
-    stage = InterviewStage(
-        stage_name=req.stage_name,
-        is_active=req.is_active
-    )
-    db.add(stage)
-    db.commit()
-    db.refresh(stage)
-    return stage
-
-
-def get_all_interview_stages(db: Session):
-    return db.query(InterviewStage).all()
-
-
-def get_interview_stage_by_id(stage_id: int, db: Session):
-    stage = db.query(InterviewStage).filter(InterviewStage.id == stage_id).first()
-    if not stage:
-        raise HTTPException(status_code=404, detail="Interview stage not found")
-    return stage
-
-
-def update_interview_stage(stage_id: int, req: InterviewStageUpdate, db: Session):
-    stage = get_interview_stage_by_id(stage_id, db)
-
-    if req.stage_name is not None:
-        stage.stage_name = req.stage_name
-   
-    if req.is_active is not None:
-        stage.is_active = req.is_active
-
-    db.commit()
-    db.refresh(stage)
-    return stage
-
-def update_interview_stage_is_active(
-    stage_id: int,
-    req: InterviewStageIsActiveUpdate,
+def create_interview_stage_controller(
+    req,
     db: Session
 ):
-    stage = get_interview_stage_by_id(stage_id, db)
-    stage.is_active = req.is_active
-    db.commit()
-    db.refresh(stage)
-    return stage
+    return create_interview_stage(
+        req,
+        db
+    )
 
 
-def delete_interview_stage(stage_id: int, db: Session):
-    stage = get_interview_stage_by_id(stage_id, db)
-    db.delete(stage)
-    db.commit()
-    return {"message": "Interview stage deleted successfully"}
+def get_all_interview_stages_controller(
+    db: Session
+):
+    return get_all_interview_stages(
+        db
+    )
+
+
+def get_interview_stage_by_id_controller(
+    stage_id: int,
+    db: Session
+):
+    return get_interview_stage_by_id(
+        stage_id,
+        db
+    )
+
+
+def update_interview_stage_controller(
+    stage_id: int,
+    req,
+    db: Session
+):
+    return update_interview_stage(
+        stage_id,
+        req,
+        db
+    )
+
+
+def update_interview_stage_is_active_controller(
+    stage_id: int,
+    req,
+    db: Session
+):
+    return update_interview_stage_is_active(
+        stage_id,
+        req,
+        db
+    )
+
+
+def delete_interview_stage_controller(
+    stage_id: int,
+    db: Session
+):
+    return delete_interview_stage(
+        stage_id,
+        db
+    )

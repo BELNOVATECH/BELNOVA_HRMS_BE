@@ -1,46 +1,48 @@
-from fastapi import HTTPException
+from sqlalchemy.orm import Session
+
 from services.department_service import (
-    create_department,
-    get_department,
-    get_all_departments
+    create_department_service,
+    get_departments_service,
+    get_department_by_id_service,
+    update_department_status_service
 )
-from models.department import DepartmentCreateRequest, DepartmentResponse
-from services.department_service import update_department_is_active
 
 
-def create_department_controller(request: DepartmentCreateRequest):
-    row = create_department(request.department)
-
-    return DepartmentResponse(
-        id=row["id"],
-        department=row["department"],
-        is_active=row["is_active"]
+def create_department_controller(
+    payload,
+    db: Session
+):
+    return create_department_service(
+        payload,
+        db
     )
 
 
-def get_department_controller(department_id: int):
-    dep = get_department(department_id)
-    if not dep:
-        raise HTTPException(status_code=404, detail="Department not found")
-
-    return DepartmentResponse(
-        id=dep["id"],
-        department=dep["department"],
-        is_active=dep["is_active"]
+def get_departments_controller(
+    db: Session
+):
+    return get_departments_service(
+        db
     )
 
 
-def get_all_departments_controller():
-    rows = get_all_departments()
+def get_department_by_id_controller(
+    dept_id: int,
+    db: Session
+):
+    return get_department_by_id_service(
+        dept_id,
+        db
+    )
 
-    return [
-        DepartmentResponse(
-            id=row["id"],
-            department=row["department"],
-            is_active=row["is_active"]
-        )
-        for row in rows
-    ]
-    
-def update_department_is_active_controller(dept_id: int, request):
-    return update_department_is_active(dept_id, request.is_active)
+
+def update_department_status_controller(
+    dept_id: int,
+    payload,
+    db: Session
+):
+    return update_department_status_service(
+        dept_id,
+        payload,
+        db
+    )

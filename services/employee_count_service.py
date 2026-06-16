@@ -1,11 +1,21 @@
+from sqlalchemy.orm import Session
 from sqlalchemy import func
-from models.employee_model import Employee  # ✅ EXISTING MODEL
 
-def get_active_employee_count_service(db):
+from models.generated_models import EmployeeRegistration
+
+
+def get_active_employee_count_service(db: Session):
+
     total = (
-        db.query(func.count(Employee.id))
-        .filter(Employee.is_active == True)
+        db.query(
+            func.count(EmployeeRegistration.id)
+        )
+        .filter(
+            EmployeeRegistration.is_active == True
+        )
         .scalar()
     )
 
-    return {"total_employees": total}
+    return {
+        "total_employees": total
+    }

@@ -5,6 +5,9 @@ from datetime import datetime, date
 from fastapi import UploadFile, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import text
+# from models.generated_models import (
+#     LeaveRequest,LeaveRequestCC
+# )
 
 from models.leave_model import LeaveRequest
 from models.leave_request_cc_model import LeaveRequestCC
