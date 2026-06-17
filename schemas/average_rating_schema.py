@@ -13,9 +13,7 @@ class EmployeeRatingCreate(BaseModel):
 
 
 class AverageRatingResponse(BaseModel):
-    id: int
-    emp_id: int
-    designation_id: int
-    rating: float
-    reviewer_id: int
+    total_ratings: int
+    sum_of_ratings: float
+    average_rating: float
     message: str
