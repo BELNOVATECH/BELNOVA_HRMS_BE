@@ -214,3 +214,12 @@ class EmployeeResponse(BaseModel):
     designation: Optional[DesignationResponse] = None
 
     employee_family_member: List[FamilyMemberResponse] = []
+
+
+
+class MasterStatusResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    name: str
+    is_active: Optional[bool] = True
