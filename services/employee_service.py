@@ -195,7 +195,8 @@ from models.generated_models import (
     MasterDesignation,
       Users,
     EmployeeRegistration,
-    EmployeeFamilyMember
+    EmployeeFamilyMember,
+    MasterStatus
 )
 from sqlalchemy.orm import Session, joinedload
 from datetime import datetime
@@ -459,3 +460,29 @@ def get_employee_by_id_service(
         )
 
     return employee
+
+
+
+def get_all_status_service(db: Session):
+
+    return (
+        db.query(MasterStatus)
+        .filter(MasterStatus.is_active == True)
+        .order_by(MasterStatus.id)
+        .all()
+    )
+
+
+def get_status_by_id_service(
+    status_id: int,
+    db: Session
+):
+
+    return (
+        db.query(MasterStatus)
+        .filter(
+            MasterStatus.id == status_id,
+            MasterStatus.is_active == True
+        )
+        .first()
+    )
