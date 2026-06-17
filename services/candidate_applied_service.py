@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from sqlalchemy import desc
 
-from models.candidate_applied_model import CandidateApplied
+from models.generated_models import CandidateApplied
 from schemas.candidate_applied_schema import CandidateAppliedCreate
 from utils.date_utils import convert_date
 

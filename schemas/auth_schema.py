@@ -2,7 +2,32 @@
 
 from pydantic import BaseModel
 from typing import List
+from pydantic import BaseModel, EmailStr
+from typing import Optional
+from datetime import date
 
+class UserRegister(BaseModel):
+    first_name: str
+    last_name: str
+    role_id: int
+    mobile: str
+    email: EmailStr
+    password: str
+
+    gender_id: Optional[int] = None
+    dob: Optional[date] = None
+    address: Optional[str] = None
+
+
+class UserResponse(BaseModel):
+    id: int
+    first_name: str
+    last_name: str
+    email: str
+    mobile: str
+
+    class Config:
+        from_attributes = True
 
 # 🔥 THIS WAS MISSING
 class LoginRequest(BaseModel):

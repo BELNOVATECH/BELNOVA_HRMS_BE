@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
-from models.master_role_model import MasterRole
+from models.generated_models import MasterRole
 
 
 def create_role_service(payload, db: Session):

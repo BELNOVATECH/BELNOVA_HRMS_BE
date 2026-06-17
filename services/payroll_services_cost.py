@@ -1,11 +1,11 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from models.employee_model import Employee
+from models.generated_models import EmployeeRegistration
 
 def get_monthly_payroll_cost(db: Session):
     total_ctc = (
-        db.query(func.sum(Employee.ctc))
-        .filter(Employee.is_active == True)  
+        db.query(func.sum(EmployeeRegistration.ctc))
+        .filter(EmployeeRegistration.is_active == True)  
         .scalar()
     )
 

@@ -173,16 +173,15 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from datetime import date
 from collections import defaultdict
-
 from core.database import get_db
-
-from models.payroll_model import Payroll
-from models.employee_model import Employee
-from models.master_month import MasterMonth
-from models.master_year import MasterYear
-from models.master_perc_cal_id import MasterPercCalId
-from models.leave_model import LeaveRequest
-
+from models.generated_models import (
+    Payslips,
+    EmployeeRegistration,
+    MasterMonth,
+    MasterYear,
+    MasterPercCalId,
+    LeaveRequest
+)
 from services.payroll_service import get_payroll_preview
 
 router = APIRouter(prefix="/payroll", tags=["Payroll"])
@@ -209,14 +208,15 @@ def is_future_month_year(month_id: int, year_id: int, db: Session) -> bool:
     )
 
 
-def build_response(emp: Employee, payroll: Payroll, month: MasterMonth, year: MasterYear):
+def build_response(emp: EmployeeRegistration, payroll: Payslips, month: MasterMonth, year: MasterYear):
     return {
         "employee": {
             "id": emp.id,
-            "name": emp.first_name,
+            "name": f"{emp.first_name} {emp.last_name}",
             "emp_code": emp.emp_code,
             "designation_id": emp.designation_id,
-            "designation_name": emp.designation_name,
+            "designation_name": (emp.designation.designation_name
+                                if emp.designation else None),
             "join_date": emp.join_date,
             "bank_account_no": emp.bank_ac_no,
             "ifsc_code": emp.ifsc_code,
@@ -280,8 +280,8 @@ def get_payslip_by_employee(
         raise HTTPException(status_code=400, detail="Future month/year not allowed")
 
     emp = (
-        db.query(Employee)
-        .filter(Employee.id == emp_id, Employee.is_active == True)
+        db.query(EmployeeRegistration)
+        .filter(EmployeeRegistration.id == emp_id, EmployeeRegistration.is_active == True)
         .first()
     )
     if not emp:
@@ -294,12 +294,12 @@ def get_payslip_by_employee(
         raise HTTPException(status_code=404, detail="Invalid month or year")
 
     existing = (
-        db.query(Payroll)
+        db.query(Payslips)
         .filter(
-            Payroll.emp_id == emp_id,
-            Payroll.month_id == month_id,
-            Payroll.year_id == year_id,
-            Payroll.is_active == True,
+            Payslips.emp_id == emp_id,
+            Payslips.month_id == month_id,
+            Payslips.year_id == year_id,
+            Payslips.is_active == True,
         )
         .first()
     )
@@ -326,7 +326,7 @@ def get_payslip_by_employee(
     if not preview:
         raise HTTPException(status_code=400, detail="Payroll calculation failed")
 
-    payroll = Payroll(
+    payroll = Payslips(
         emp_id=emp.id,
         month_id=month_id,
         year_id=year_id,
@@ -388,7 +388,7 @@ def calculate_all(
     if not perc:
         raise HTTPException(status_code=400, detail="Percentage config not found")
 
-    employees = db.query(Employee).filter(Employee.is_active == True).all()
+    employees = db.query(EmployeeRegistration).filter(EmployeeRegistration.is_active == True).all()
 
     leave_rows = (
         db.query(LeaveRequest.emp_id, LeaveRequest.total_days)

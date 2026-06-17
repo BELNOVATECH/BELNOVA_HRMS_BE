@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from sqlalchemy import text
 
-from models.designation_model import Designation
+from models.generated_models import MasterDesignation
 from schemas.designation_schema import DesignationCreate
 
 
@@ -26,9 +26,9 @@ def create_designation_service(payload: DesignationCreate, db: Session):
         )
 
     # ✅ Prevent duplicates
-    exists = db.query(Designation).filter(
-        Designation.designation_name == payload.designation_name,
-        Designation.dept_id == payload.dept_id
+    exists = db.query(MasterDesignation).filter(
+        MasterDesignation.designation_name == payload.designation_name,
+        MasterDesignation.dept_id == payload.dept_id
     ).first()
 
     if exists:
@@ -37,7 +37,7 @@ def create_designation_service(payload: DesignationCreate, db: Session):
             detail="Designation already exists for this department"
         )
 
-    designation = Designation(
+    designation = MasterDesignation(
         designation_name=payload.designation_name,
         dept_id=payload.dept_id
     )
@@ -50,7 +50,7 @@ def create_designation_service(payload: DesignationCreate, db: Session):
 
 
 def get_designations_service(db: Session):
-    return db.query(Designation).all()
+    return db.query(MasterDesignation).all()
 
 
 def update_designation_status_service(
@@ -58,8 +58,8 @@ def update_designation_status_service(
     is_active: bool,
     db: Session
 ):
-    designation = db.query(Designation).filter(
-        Designation.id == designation_id
+    designation = db.query(MasterDesignation).filter(
+        MasterDesignation.id == designation_id
     ).first()
 
     if not designation:

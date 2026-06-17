@@ -1,7 +1,6 @@
 from sqlalchemy.orm import Session
-from models.master_module import MasterModule
-from models.master_screen import MasterScreen
-from models.master_screen_permission import MasterScreenPermission
+from models.generated_models import MasterModule , MasterScreen, MasterScreenPermission
+
 
 # ---------- MODULE ----------
 def get_all_modules_service(db: Session):
@@ -32,7 +31,7 @@ def create_bulk_permission_service(data_list, db: Session):
             .filter(
                 MasterScreenPermission.role_id == data.role_id,
                 MasterScreenPermission.module_id == data.module_id,
-                MasterScreenPermission.screen_id == data.screen_id,
+                MasterScreenPermission.sub_module_id == data.sub_module_id,
             )
             .first()
         )
@@ -74,7 +73,7 @@ def bulk_update_permission_service(data_list, db: Session):
 
         permission.role_id = data.role_id
         permission.module_id = data.module_id
-        permission.screen_id = data.screen_id
+        permission.sub_module_id = data.sub_module_id
 
         permission.can_view = data.can_view
         permission.can_edit = data.can_edit

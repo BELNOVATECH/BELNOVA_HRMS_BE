@@ -172,13 +172,15 @@
 import calendar
 from decimal import Decimal
 
-from models.employee_model import Employee
-from models.master_perc_cal_id import MasterPercCalId
+from models.generated_models import (
+    EmployeeRegistration,
+    MasterPercCalId
+)
 from utils.amount_to_words import amount_to_words
 
 
 def get_payroll_preview(
-    emp: Employee,
+    emp: EmployeeRegistration,
     perc: MasterPercCalId,
     leave_map: dict,
     month: int,
