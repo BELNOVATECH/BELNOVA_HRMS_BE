@@ -1,19 +1,19 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
-from models.employee_model import Employee
+from models.generated_models import EmployeeRegistration
 
 
-def validate_employee(emp_id: int, db: Session) -> Employee:
+def validate_employee(emp_id: int, db: Session) -> EmployeeRegistration:
     """
     Validate employee exists and is active
     (Used by Leave Management & other services)
     """
 
     employee = (
-        db.query(Employee)
+        db.query(EmployeeRegistration)
         .filter(
-            Employee.id == emp_id,
-            Employee.is_active == True
+            EmployeeRegistration.id == emp_id,
+            EmployeeRegistration.is_active == True
         )
         .first()
     )

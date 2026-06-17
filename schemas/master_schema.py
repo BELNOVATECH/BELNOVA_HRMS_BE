@@ -26,7 +26,7 @@ class MasterScreenResponse(BaseModel):
 class MasterScreenPermissionCreate(BaseModel):
     role_id: int
     module_id: int
-    screen_id: Optional[int] = None
+    sub_module_id: Optional[int] = None
 
     can_view: bool = False
     can_edit: bool = False
@@ -42,7 +42,7 @@ class MasterScreenPermissionBulkUpdate(BaseModel):
     id: int
     role_id: int
     module_id: int
-    screen_id: Optional[int] = None
+    sub_module_id: Optional[int] = None
 
     can_view: bool
     can_edit: bool

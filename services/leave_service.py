@@ -11,6 +11,12 @@ from sqlalchemy import text
 
 from models.leave_model import LeaveRequest
 from models.leave_request_cc_model import LeaveRequestCC
+from models.generated_models import (
+    LeaveRequest,
+    LeaveRequestCc,
+    EmployeeRegistration,
+    MasterLeavetype
+)
 from services.employee_validator import validate_employee
 from schemas.leave_schema import (
     LeaveApprovalRequest,
@@ -154,7 +160,7 @@ def apply_leave(
     if cc:
         for cc_id in map(int, cc.split(",")):
             db.add(
-                LeaveRequestCC(
+                LeaveRequestCc(
                     leave_request_id=leave.id,
                     cc_to_id=cc_id,
                     created_by=employee.id,

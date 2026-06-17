@@ -5,7 +5,7 @@ from sqlalchemy import func
 from fastapi.responses import FileResponse
 import pandas as pd
 
-from models.attendance_tracker import AttendanceTracker
+from models.generated_models import AttendanceTracker
 from services.attendance_service import get_attendance_service
 
 
@@ -56,7 +56,7 @@ def login_controller(req, db: Session):
         check_in_time=func.now(),  # UTC
         working_status_id=req.working_status_id,
         remarks=req.remarks,
-        created_by=1,
+       created_by=req.emp_id,
         created_date=func.now(),
         is_active=True
     )
@@ -81,7 +81,7 @@ def logout_controller(emp_id: int, db: Session):
         raise HTTPException(status_code=400, detail="Login required before logout")
 
     attendance.check_out_time = func.now()
-    attendance.modified_by = 1
+    attendance.modified_by = emp_id
     attendance.modified_date = func.now()
 
     db.commit()
