@@ -1,6 +1,12 @@
 from sqlalchemy import select
-from models.holiday_model import HolidayCalendar
+from sqlalchemy.orm import Session
 
-def get_holidays_service(db):
-    result = db.execute(select(HolidayCalendar))
+from models.generated_models import HolidayCalendar
+
+
+def get_holidays_service(db: Session):
+    result = db.execute(
+        select(HolidayCalendar)
+    )
+
     return result.scalars().all()

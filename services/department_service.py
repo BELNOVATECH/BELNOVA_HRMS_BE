@@ -1,17 +1,13 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
-from models.department import Department
-from schemas.department_schema import (
-    DepartmentCreateRequest,
-    IsActiveUpdate
-)
+from models.generated_models import MasterDepartment
 
 
-def create_department(payload: DepartmentCreateRequest, db: Session):
-    # Duplicate check
-    exists = db.query(Department).filter(
-        Department.department.ilike(payload.department)
+def create_department_service(payload, db: Session):
+
+    exists = db.query(MasterDepartment).filter(
+        MasterDepartment.department.ilike(payload.department)
     ).first()
 
     if exists:
@@ -20,37 +16,58 @@ def create_department(payload: DepartmentCreateRequest, db: Session):
             detail="Department already exists"
         )
 
-    dept = Department(
+    department = MasterDepartment(
         department=payload.department,
         is_active=True
     )
 
-    db.add(dept)
+    db.add(department)
     db.commit()
-    db.refresh(dept)
-    return dept
+    db.refresh(department)
+
+    return department
 
 
-def get_departments(db: Session):
-    return db.query(Department).order_by(Department.id).all()
+def get_departments_service(db: Session):
+    return db.query(
+        MasterDepartment
+    ).order_by(
+        MasterDepartment.id
+    ).all()
 
 
-def update_department_status(
+def get_department_by_id_service(
     dept_id: int,
-    payload: IsActiveUpdate,
     db: Session
 ):
-    dept = db.query(Department).filter(
-        Department.id == dept_id
+    department = db.query(
+        MasterDepartment
+    ).filter(
+        MasterDepartment.id == dept_id
     ).first()
 
-    if not dept:
+    if not department:
         raise HTTPException(
             status_code=404,
             detail="Department not found"
         )
 
-    dept.is_active = payload.is_active
+    return department
+
+
+def update_department_status_service(
+    dept_id: int,
+    payload,
+    db: Session
+):
+    department = get_department_by_id_service(
+        dept_id,
+        db
+    )
+
+    department.is_active = payload.is_active
+
     db.commit()
-    db.refresh(dept)
-    return dept
+    db.refresh(department)
+
+    return department

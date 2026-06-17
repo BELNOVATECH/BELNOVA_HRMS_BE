@@ -1,35 +1,90 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import distinct
+from sqlalchemy import func, distinct
 
-from models.employee_model import Employee
-from models.attendance_tracker import AttendanceTracker
-from models.leave_model import LeaveRequest
+from models.generated_models import (
+    EmployeeRegistration,
+    AttendanceTracker,
+    LeaveRequest
+)
 
 
 def get_dashboard_data_service(db: Session):
-    # ---------------- TOTAL ----------------
-    total_emps = db.query(Employee).all()
+
+    # ==========================
+    # TOTAL EMPLOYEES
+    # ==========================
+
+    total_count = (
+        db.query(func.count(EmployeeRegistration.id))
+        .scalar()
+    )
+
+    total_employees = (
+        db.query(EmployeeRegistration)
+        .all()
+    )
+
     total_list = [
-        {"id": e.id, "name": f"{e.first_name} {e.last_name or ''}".strip()}
-        for e in total_emps
+        {
+            "id": emp.id,
+            "name": f"{emp.first_name} {emp.last_name or ''}".strip()
+        }
+        for emp in total_employees
     ]
 
-    # ---------------- ACTIVE ----------------
-    active_emps = db.query(Employee).filter(Employee.is_active == True).all()
+    # ==========================
+    # ACTIVE EMPLOYEES
+    # ==========================
+
+    active_count = (
+        db.query(func.count(EmployeeRegistration.id))
+        .filter(EmployeeRegistration.is_active == True)
+        .scalar()
+    )
+
+    active_employees = (
+        db.query(EmployeeRegistration)
+        .filter(EmployeeRegistration.is_active == True)
+        .all()
+    )
+
     active_list = [
-        {"id": e.id, "name": f"{e.first_name} {e.last_name or ''}".strip()}
-        for e in active_emps
+        {
+            "id": emp.id,
+            "name": f"{emp.first_name} {emp.last_name or ''}".strip()
+        }
+        for emp in active_employees
     ]
 
-    # ---------------- INACTIVE ----------------
-    inactive_emps = db.query(Employee).filter(Employee.is_active == False).all()
+    # ==========================
+    # INACTIVE EMPLOYEES
+    # ==========================
+
+    inactive_count = (
+        db.query(func.count(EmployeeRegistration.id))
+        .filter(EmployeeRegistration.is_active == False)
+        .scalar()
+    )
+
+    inactive_employees = (
+        db.query(EmployeeRegistration)
+        .filter(EmployeeRegistration.is_active == False)
+        .all()
+    )
+
     inactive_list = [
-        {"id": e.id, "name": f"{e.first_name} {e.last_name or ''}".strip()}
-        for e in inactive_emps
+        {
+            "id": emp.id,
+            "name": f"{emp.first_name} {emp.last_name or ''}".strip()
+        }
+        for emp in inactive_employees
     ]
 
-    # ---------------- UNINFORMED LEAVES ----------------
-    inactive_attendance_emp_ids = (
+    # ==========================
+    # UNINFORMED LEAVES
+    # ==========================
+
+    attendance_emp_ids = (
         db.query(distinct(AttendanceTracker.emp_id))
         .filter(AttendanceTracker.is_active == False)
         .subquery()
@@ -40,35 +95,43 @@ def get_dashboard_data_service(db: Session):
         .subquery()
     )
 
-    uninformed_emps = (
-        db.query(Employee)
-        .filter(Employee.id.in_(inactive_attendance_emp_ids))
-        .filter(~Employee.id.in_(leave_emp_ids))
+    uninformed_employees = (
+        db.query(EmployeeRegistration)
+        .filter(EmployeeRegistration.id.in_(attendance_emp_ids))
+        .filter(~EmployeeRegistration.id.in_(leave_emp_ids))
         .all()
     )
 
     uninformed_list = [
         {
-            "id": e.id,
-            "name": f"{e.first_name} {e.last_name or ''}".strip(),
-            "designation_id": e.designation_id
+            "id": emp.id,
+            "name": f"{emp.first_name} {emp.last_name or ''}".strip(),
+            "designation_id": emp.designation_id
         }
-        for e in uninformed_emps
+        for emp in uninformed_employees
     ]
 
+    # ==========================
+    # RESPONSE
+    # ==========================
+
     return {
+
         "total_employees": {
-            "count": len(total_list),
+            "count": total_count,
             "employees": total_list
         },
+
         "active_employees": {
-            "count": len(active_list),
+            "count": active_count,
             "employees": active_list
         },
+
         "inactive_employees": {
-            "count": len(inactive_list),
+            "count": inactive_count,
             "employees": inactive_list
         },
+
         "uninformed_leaves": {
             "count": len(uninformed_list),
             "employees": uninformed_list
