@@ -45,3 +45,14 @@ class MasterProjectResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+
+class MasterProjectModuleResponse(BaseModel):
+    id: int
+    project_module: str
+    project_id: int
+    is_active: Optional[bool]
+
+    class Config:
+        from_attributes = True

@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from core.database import get_db
 
-from schemas.task_schema import TaskCreate, MasterTaskTypeResponse, MasterProjectResponse
+from schemas.task_schema import TaskCreate, MasterTaskTypeResponse, MasterProjectResponse, MasterProjectModuleResponse
 from controller.task_controller import (
     create_task_controller,
     get_all_tasks_controller,
@@ -13,6 +13,7 @@ from controller.task_controller import (
     get_all_projects_service,
     get_project_by_id_service
 )
+from services.task_service import get_all_project_modules_service
 
 router = APIRouter(
     prefix="/tasks",
@@ -83,12 +84,22 @@ def get_project(project_id: int, db: Session = Depends(get_db)):
 
     return project
 
+@router.get(
+    "/project-modules",
+    response_model=list[MasterProjectModuleResponse]
+)
+def get_project_modules(
+    db: Session = Depends(get_db)
+):
+    return get_all_project_modules_service(db)
+
 @router.get("/{task_id}")
 def get_task_by_id(
     task_id: int,
     db: Session = Depends(get_db)
 ):
     return get_task_by_id_controller(task_id, db)
+
 
 
 @router.get(
@@ -139,3 +150,4 @@ def get_project(project_id: int, db: Session = Depends(get_db)):
         )
 
     return project
+
