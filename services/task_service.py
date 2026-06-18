@@ -1,4 +1,4 @@
-from models.generated_models import Tasks
+from models.generated_models import Tasks,MasterTaskType, MasterProject
 
 
 def create_task_service(payload, db):
@@ -37,3 +37,29 @@ def get_task_by_id_service(task_id, db):
         Tasks.id == task_id,
         Tasks.is_active == True
     ).first()
+
+
+
+
+def get_all_task_types_service(db):
+    return db.query(MasterTaskType).all()
+
+
+def get_task_type_by_id_service(db, task_type_id: int):
+    return (
+        db.query(MasterTaskType)
+        .filter(MasterTaskType.id == task_type_id)
+        .first()
+    )
+
+
+def get_all_projects_service(db):
+    return db.query(MasterProject).all()
+
+
+def get_project_by_id_service(db, project_id: int):
+    return (
+        db.query(MasterProject)
+        .filter(MasterProject.id == project_id)
+        .first()
+    )

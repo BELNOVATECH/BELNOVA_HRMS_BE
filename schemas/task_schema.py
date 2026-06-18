@@ -22,3 +22,26 @@ class TaskCreate(BaseModel):
 
 class TaskUpdate(TaskCreate):
     modified_by: Optional[int] = None
+
+
+
+
+
+
+
+class MasterTaskTypeResponse(BaseModel):
+    id: int
+    task_type: str
+    is_active: Optional[bool]
+
+    class Config:
+        from_attributes = True
+
+
+class MasterProjectResponse(BaseModel):
+    id: int
+    project_name: str
+    is_active: Optional[bool]
+
+    class Config:
+        from_attributes = True
