@@ -3,7 +3,16 @@ from fastapi import HTTPException
 from services.task_service import (
     create_task_service,
     get_all_tasks_service,
-    get_task_by_id_service
+    get_task_by_id_service,
+       get_all_task_types_service,
+    get_task_type_by_id_service,
+    get_all_projects_service,
+    get_project_by_id_service
+)
+
+from schemas.task_schema import (
+    MasterTaskTypeResponse,
+    MasterProjectResponse
 )
 
 
@@ -26,3 +35,8 @@ def get_task_by_id_controller(task_id, db):
         )
 
     return task
+
+
+
+
+
