@@ -43,7 +43,7 @@ from route.average_rating_route import router as average_rating_router
 from route.pending_review_route import router as pending_review_router
 from route.dashboard_route import router as dashboard_router
 from route.employee_activity_route import router as employee_activity_router
-
+from route.task_route import router as task_router
 
 # -------------------------------------------------
 # APP INIT
@@ -120,6 +120,7 @@ app.include_router(top_performer_router)
 app.include_router(average_rating_router)
 app.include_router(pending_review_router)
 app.include_router(dashboard_router)
+app.include_router(task_router)
 app.include_router(employee_activity_router)
 
 
