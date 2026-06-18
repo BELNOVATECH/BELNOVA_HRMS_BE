@@ -174,7 +174,8 @@ from decimal import Decimal
 
 from models.generated_models import (
     EmployeeRegistration,
-    MasterPercCalId
+    MasterPercCalId,
+    Payslips
 )
 from utils.amount_to_words import amount_to_words
 
@@ -259,3 +260,39 @@ def get_payroll_preview(
         "net_salary": float(net_salary),
         "net_pay_in_words": amount_to_words(net_salary),  # ✅ GENERATED HERE
     }
+
+def get_all_payslips_service(db):
+    return db.query(Payslips).all()
+
+
+def get_payslip_by_id_service(db, payslip_id: int):
+    return (
+        db.query(Payslips)
+        .filter(Payslips.id == payslip_id)
+        .first()
+    )
+
+
+def get_payslips_by_employee_service(db, emp_id: int):
+    return (
+        db.query(Payslips)
+        .filter(Payslips.emp_id == emp_id)
+        .all()
+    )
+
+
+def get_payslip_by_month_year_service(
+    db,
+    emp_id: int,
+    month_id: int,
+    year_id: int
+):
+    return (
+        db.query(Payslips)
+        .filter(
+            Payslips.emp_id == emp_id,
+            Payslips.month_id == month_id,
+            Payslips.year_id == year_id
+        )
+        .first()
+    )
