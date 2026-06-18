@@ -1,4 +1,4 @@
-from models.generated_models import Tasks,MasterTaskType, MasterProject
+from models.generated_models import Tasks,MasterTaskType, MasterProject,MasterProjectModule
 
 
 def create_task_service(payload, db):
@@ -62,4 +62,24 @@ def get_project_by_id_service(db, project_id: int):
         db.query(MasterProject)
         .filter(MasterProject.id == project_id)
         .first()
+    )
+
+
+def get_all_project_modules_service(db):
+    return db.query(MasterProjectModule).all()
+
+
+def get_project_module_by_id_service(db, module_id: int):
+    return (
+        db.query(MasterProjectModule)
+        .filter(MasterProjectModule.id == module_id)
+        .first()
+    )
+
+
+def get_project_modules_by_project_service(db, project_id: int):
+    return (
+        db.query(MasterProjectModule)
+        .filter(MasterProjectModule.project_id == project_id)
+        .all()
     )
