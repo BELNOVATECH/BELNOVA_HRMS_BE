@@ -21,7 +21,8 @@ def register_user(
     try:
         return register_user_service(db, payload)
 
-    except ValueError as e:
+    except Exception as e:
+        print("REGISTER ERROR:", str(e))   # <-- add this
         raise HTTPException(
             status_code=400,
             detail=str(e)
