@@ -65,3 +65,23 @@ class PayrollResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+
+class PayslipResponse(BaseModel):
+    id: int
+    emp_id: int
+    month_id: int
+    year_id: int
+    basic: Decimal
+    hra: Decimal
+    conveyance: Decimal
+    medical_allowance: Decimal
+    special_allowance: Decimal
+    total_earnings: Optional[Decimal]
+    total_deductions: Optional[Decimal]
+    net_pay: Optional[Decimal]
+    is_active: Optional[bool]
+
+    class Config:
+        from_attributes = True

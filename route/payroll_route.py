@@ -182,7 +182,8 @@ from models.generated_models import (
     MasterPercCalId,
     LeaveRequest
 )
-from services.payroll_service import get_payroll_preview
+from schemas.payroll_schema import PayslipResponse
+from services.payroll_service import get_payroll_preview, get_all_payslips_service,get_payslip_by_id_service,get_payslips_by_employee_service,get_payslip_by_month_year_service
 
 router = APIRouter(prefix="/payroll", tags=["Payroll"])
 
@@ -422,3 +423,61 @@ def calculate_all(
         "payroll": results
     }
 
+
+@router.get("/payslips", response_model=list[PayslipResponse])
+def get_all_payslips(
+    db: Session = Depends(get_db)
+):
+    return get_all_payslips_service(db)
+
+
+@router.get("/{payslip_id}", response_model=PayslipResponse)
+def get_payslip(
+    payslip_id: int,
+    db: Session = Depends(get_db)
+):
+    payslip = get_payslip_by_id_service(db, payslip_id)
+
+    if not payslip:
+        raise HTTPException(
+            status_code=404,
+            detail="Payslip not found"
+        )
+
+    return payslip
+
+
+@router.get("/employee/{emp_id}",
+            response_model=list[PayslipResponse])
+def get_employee_payslips(
+    emp_id: int,
+    db: Session = Depends(get_db)
+):
+    return get_payslips_by_employee_service(
+        db,
+        emp_id
+    )
+
+
+@router.get("/employee/monthly",
+            response_model=PayslipResponse)
+def get_monthly_payslip(
+    emp_id: int,
+    month_id: int,
+    year_id: int,
+    db: Session = Depends(get_db)
+):
+    payslip = get_payslip_by_month_year_service(
+        db,
+        emp_id,
+        month_id,
+        year_id
+    )
+
+    if not payslip:
+        raise HTTPException(
+            status_code=404,
+            detail="Payslip not found"
+        )
+
+    return payslip
